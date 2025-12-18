@@ -2,6 +2,9 @@
 #include "FT3168.h"
 #include "mth_gauges.h"
 
+void set_speed_animation();
+
+
 void setup()
 {
   Serial.begin(115200);
@@ -15,6 +18,20 @@ void setup()
 void loop()
 {
   // Replicate the original LVGL animation in the loop:
+  set_speed_animation();
+
+  // Small delay to make updates smooth (~50Hz)
+  delay(20);
+}
+
+
+
+
+
+
+/////////////// Custom Loop Functions ///////////////
+void set_speed_animation()
+{
   // - forward: 0 -> 240 over 3000 ms
   // - playback: 240 -> 0 over 1000 ms
   // - repeat infinitely (total period = 4000 ms)
@@ -37,7 +54,4 @@ void loop()
   // Optional serial output for debugging
   Serial.print("gauge value: ");
   Serial.println(value);
-
-  // Small delay to make updates smooth (~50Hz)
-  delay(20);
 }
