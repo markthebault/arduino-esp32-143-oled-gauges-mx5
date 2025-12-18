@@ -3,6 +3,7 @@
 #include "lcd_config.h"
 #include "FT3168.h"
 #include "read_lcd_id_bsp.h"
+#include "mth_gauges.h"
 // #include "lv_examples.h"
 static SemaphoreHandle_t lvgl_mux = NULL; //mutex semaphores
 #define LCD_HOST    SPI2_HOST
@@ -37,73 +38,9 @@ static const sh8601_lcd_init_cmd_t co5300_lcd_init_cmds[] =
   //{0x36, (uint8_t []){0x60}, 1, 0},
 };
 
-static lv_obj_t * meter;
+/* Gauge implementation moved to mth_gauges.c */
 
-static void set_value(void * indic, int32_t v)
-{
-    lv_meter_set_indicator_value(meter, indic, v);
-}
-
-/**
- * A simple meter
- */
-void lv_example_speedometer_dark(void)
-{
-    /* 1. Create Meter & Set Dark Theme Base */
-    meter = lv_meter_create(lv_scr_act());
-    lv_obj_center(meter);
-    
-    // Increased the size slightly because we are pushing labels out
-    int32_t size = (EXAMPLE_LCD_H_RES < EXAMPLE_LCD_V_RES) ? EXAMPLE_LCD_H_RES - 30 : EXAMPLE_LCD_V_RES - 30;
-    lv_obj_set_size(meter, size, size);
-
-    lv_obj_set_style_bg_color(lv_scr_act(), lv_color_hex(0x000000), 0);
-    lv_obj_set_style_bg_color(meter, lv_color_hex(0x000000), 0);
-    lv_obj_set_style_border_width(meter, 0, 0);
-    lv_obj_set_style_outline_width(meter, 0, 0);
-    lv_obj_set_style_radius(meter, LV_RADIUS_CIRCLE, 0);
-
-    /* 2. Configure Scale */
-    lv_meter_scale_t * scale = lv_meter_add_scale(meter);
-    lv_meter_set_scale_range(meter, scale, 0, 240, 240, 150); 
-    
-    /* Minor Ticks: Thinner (1px) and shorter (8px) to reduce visual clutter */
-    lv_meter_set_scale_ticks(meter, scale, 49, 1, 8, lv_color_hex(0x666666));
-    
-    /* Major Ticks: 
-       - Tick length reduced to 18px (from 22) to give the font more room
-       - LABEL GAP increased to 35 (from 20) to push numbers outward
-    */
-    lv_meter_set_scale_major_ticks(meter, scale, 4, 3, 18, lv_color_hex(0xFFFFFF), 29);
-
-    /* Font Style: Montserrat 24 */
-    lv_obj_set_style_text_color(meter, lv_color_hex(0xFFFFFF), 0);
-    lv_obj_set_style_text_font(meter, &lv_font_montserrat_24, 0); 
-
-    /* 3. The Needle - VIBRANT ORANGE */
-    // Offset changed to -20 so it reaches the end of the scale properly
-    lv_meter_indicator_t * indic = lv_meter_add_needle_line(meter, scale, 5, lv_color_hex(0xFF8C00), -20);
-
-    /* 4. Pivot Point Decor */
-    lv_obj_t * center_knob = lv_obj_create(meter);
-    lv_obj_set_size(center_knob, size / 10, size / 10);
-    lv_obj_center(center_knob);
-    lv_obj_set_style_bg_color(center_knob, lv_color_hex(0x151515), 0);
-    lv_obj_set_style_radius(center_knob, LV_RADIUS_CIRCLE, 0);
-    lv_obj_set_style_border_color(center_knob, lv_color_hex(0x444444), 0);
-    lv_obj_set_style_border_width(center_knob, 2, 0);
-
-    /* 5. Animation */
-    lv_anim_t a;
-    lv_anim_init(&a);
-    lv_anim_set_exec_cb(&a, set_value);
-    lv_anim_set_var(&a, indic);
-    lv_anim_set_values(&a, 0, 240);
-    lv_anim_set_time(&a, 3000);
-    lv_anim_set_playback_time(&a, 1000);
-    lv_anim_set_repeat_count(&a, LV_ANIM_REPEAT_INFINITE);
-    lv_anim_start(&a);
-}
+/* lv_example_speedometer_dark has been moved to mth_gauges.c */
 
 ///////////////////////
 ///////////////////////
