@@ -3,6 +3,7 @@
 #include "mth_gauges.h"
 
 void set_speed_animation();
+void set_oil_animation();
 
 
 void setup()
@@ -10,15 +11,13 @@ void setup()
   Serial.begin(115200);
   Touch_Init();
   lcd_lvgl_Init();
-
-  // Create the gauge (initializes meter and indicator)
-  mth_gauge_speedometer_dark();
 }
 
 void loop()
 {
   // Replicate the original LVGL animation in the loop:
-  set_speed_animation();
+  // set_speed_animation();
+  set_oil_animation();
 
   // Small delay to make updates smooth (~50Hz)
   delay(20);
@@ -30,6 +29,30 @@ void loop()
 
 
 /////////////// Custom Loop Functions ///////////////
+void set_oil_animation() {
+  const unsigned long period = 4000UL; 
+  unsigned long t = millis() % period;
+  
+  float press_val;
+  int32_t temp_val;
+
+  if (t < 3000UL) {
+    // Sweep Up (0 to Max)
+    press_val = (6.0f * t) / 3000.0f;
+    temp_val = (int32_t)((180UL * t) / 3000UL);
+  } else {
+    // Sweep Down (Max to 0)
+    unsigned long t2 = t - 3000UL;
+    press_val = 6.0f - (6.0f * t2 / 1000.0f);
+    temp_val = (int32_t)(180UL - (180UL * t2) / 1000UL);
+  }
+
+  // Update gauges
+  mth_gauge_set_pressure(press_val);
+  mth_gauge_set_temp(temp_val);
+}
+
+
 void set_speed_animation()
 {
   // - forward: 0 -> 240 over 3000 ms

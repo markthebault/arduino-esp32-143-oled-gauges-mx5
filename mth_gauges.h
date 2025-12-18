@@ -9,16 +9,22 @@ extern "C" {
 #include "lvgl.h"
 #include "lcd_config.h"
 
-/**
- * Initialize and display the dark speedometer gauge.
- */
+// Original Speedometer (if still needed)
 void mth_gauge_speedometer_dark(void);
+void mth_gauge_set_speed(int32_t v);
+
+// New Oil Gauges
+/**
+ * Initialization functions for the two gauges
+ */
+void mth_gauge_oil_pressure_init(void);
+void mth_gauge_oil_temp_init(void);
 
 /**
- * Set the speed value of the dark speedometer gauge (0..240).
- * Call this from loop() to update the gauge value directly (replaces animation).
+ * Setter functions to update the needle positions
  */
-void mth_gauge_set_speed(int32_t v);
+void mth_gauge_set_pressure(float v);
+void mth_gauge_set_temp(int32_t v);
 
 #ifdef __cplusplus
 }
