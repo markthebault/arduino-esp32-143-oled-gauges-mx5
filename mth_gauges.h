@@ -7,6 +7,6 @@
 /**
  * Initialize and display the dark speedometer gauge.
  */
-void lv_example_speedometer_dark(void);
+void mth_gauge_speedometer_dark(void);
 
 #endif // MTH_GAUGES_H

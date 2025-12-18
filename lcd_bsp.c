@@ -40,7 +40,7 @@ static const sh8601_lcd_init_cmd_t co5300_lcd_init_cmds[] =
 
 /* Gauge implementation moved to mth_gauges.c */
 
-/* lv_example_speedometer_dark has been moved to mth_gauges.c */
+/* mth_gauge_speedometer_dark has been moved to mth_gauges.c */
 
 ///////////////////////
 ///////////////////////
@@ -130,8 +130,12 @@ void lcd_lvgl_Init(void)
     // lv_demo_music();        /* A modern, smartphone-like music player demo. */
     // lv_demo_stress();       /* A stress test for LVGL. */
     // lv_demo_benchmark();    /* A demo to measure the performance of LVGL or to compare different settings. */
+    
+    
+    // Set the screen in Dark. Not sure if here is the correct place to put this
+    lv_obj_set_style_bg_color(lv_scr_act(), lv_color_hex(0x000000), 0); 
 
-    lv_example_speedometer_dark();
+    mth_gauge_speedometer_dark();
     
     // Release the mutex
     example_lvgl_unlock();

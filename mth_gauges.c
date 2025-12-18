@@ -10,7 +10,7 @@ static void set_value(void *indic, int32_t v)
 /**
  * A simple dark-themed speedometer meter example.
  */
-void lv_example_speedometer_dark(void)
+void mth_gauge_speedometer_dark(void)
 {
     /* 1. Create Meter & Set Dark Theme Base */
     meter = lv_meter_create(lv_scr_act());
@@ -22,7 +22,6 @@ void lv_example_speedometer_dark(void)
                        : EXAMPLE_LCD_V_RES - 30;
     lv_obj_set_size(meter, size, size);
 
-    lv_obj_set_style_bg_color(lv_scr_act(), lv_color_hex(0x000000), 0);
     lv_obj_set_style_bg_color(meter, lv_color_hex(0x000000), 0);
     lv_obj_set_style_border_width(meter, 0, 0);
     lv_obj_set_style_outline_width(meter, 0, 0);
