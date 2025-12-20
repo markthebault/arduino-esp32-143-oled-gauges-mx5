@@ -135,8 +135,6 @@ void lcd_lvgl_Init(void)
     // Set the screen in Dark. Not sure if here is the correct place to put this
     lv_obj_set_style_bg_color(lv_scr_act(), lv_color_hex(0x000000), 0); 
 
-    // mth_gauge_speedometer_dark();
-    mth_gauge_oil_pressure_init();
     mth_gauge_oil_temp_init();
     
     // Release the mutex
