@@ -1,9 +1,9 @@
 #include "lcd_bsp.h"
 #include "esp_lcd_sh8601.h"
 #include "lcd_config.h"
-#include "FT3168.h"
+#include "../touch/FT3168.h"
 #include "read_lcd_id_bsp.h"
-#include "mth_gauges.h"
+#include "../gauges/mth_gauges.h"
 // #include "lv_examples.h"
 static SemaphoreHandle_t lvgl_mux = NULL; //mutex semaphores
 #define LCD_HOST    SPI2_HOST

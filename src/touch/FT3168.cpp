@@ -1,6 +1,6 @@
 #include "FT3168.h"
 #include "esp_err.h"
-#include "lcd_config.h"
+#include "../display/lcd_config.h"
 
 #define TEST_I2C_PORT I2C_NUM_0
 

@@ -2,9 +2,9 @@
 extern "C" {
 #endif
 
-// #include "fonts/montserrat_bold_80.h"
-#include "fonts/montserrat_bold_number_120.h"
-#include "fonts/fa_icons_54.h"
+// #include "../fonts/montserrat_bold_80.h"
+#include "../fonts/montserrat_bold_number_120.h"
+#include "../fonts/fa_icons_54.h"
 #include "mth_gauges.h"
 #include <stdio.h>
 #include <math.h>

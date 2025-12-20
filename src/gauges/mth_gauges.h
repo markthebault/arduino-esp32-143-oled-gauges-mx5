@@ -7,7 +7,7 @@ extern "C" {
 
 #include <stdint.h>
 #include "lvgl.h"
-#include "lcd_config.h"
+#include "../display/lcd_config.h"
 
 /**
  * Initialize the oil temperature gauge

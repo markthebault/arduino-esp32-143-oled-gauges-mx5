@@ -1,6 +1,6 @@
-#include "lcd_bsp.h"
-#include "FT3168.h"
-#include "mth_gauges.h"
+#include "src/display/lcd_bsp.h"
+#include "src/touch/FT3168.h"
+#include "src/gauges/mth_gauges.h"
 #include "ESP32_NOW.h"
 #include "WiFi.h"
 #include <vector>
