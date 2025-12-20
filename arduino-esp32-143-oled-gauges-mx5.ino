@@ -18,6 +18,8 @@ void setup()
     lv_obj_set_style_bg_color(lv_scr_act(), lv_color_hex(0x000000), 0); 
 
     mth_gauge_oil_temp_init();
+
+    // mth_gauge_set_temp(135);
     
     // Release the mutex
     example_lvgl_unlock();

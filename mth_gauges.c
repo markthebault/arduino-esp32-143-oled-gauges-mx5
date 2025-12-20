@@ -9,6 +9,8 @@ extern "C" {
 // Global components
 static lv_obj_t *temp_arc;
 static lv_obj_t *temp_label;
+static lv_obj_t *screen_bg;
+static lv_anim_t blink_anim;
 
 // Color palette
 #define COLOR_AMBER   lv_color_hex(0xFA8C00)
@@ -22,10 +24,11 @@ static lv_obj_t *temp_label;
 const int dimension = (EXAMPLE_LCD_H_RES > EXAMPLE_LCD_V_RES) ? EXAMPLE_LCD_H_RES : EXAMPLE_LCD_V_RES;
 const int temp_min = 60;
 const int temp_max = 160;
-const int temp_redline = 135;
 const int temp_zone_green = 80;
 const int temp_zone_orange = 120;
-const int temp_zone_red = 130;
+const int temp_zone_red = 130; // when the color of the cusor changes to red
+const int temp_redline = 130; // red arc at the end of the gauge
+const int temp_alert_threshold = 135;  // Screen blinks red when exceeding this value
 const int temp_arc_width = 24;
 const int temp_line_width = 4;
 const int temp_arc_size = dimension - (temp_line_width * 12);
@@ -36,6 +39,35 @@ const float marker_gap = ((float)(arc_end - arc_start)) / ((temp_max - temp_min)
 // Helper functions
 static void arc_anim_cb(void *arc, int32_t value) {
     lv_arc_set_value((lv_obj_t *)arc, value);
+}
+
+static void bg_blink_anim_cb(void *obj, int32_t value) {
+    if (value == 0) {
+        lv_obj_set_style_bg_color((lv_obj_t *)obj, COLOR_BLACK, LV_PART_MAIN);
+    } else {
+        lv_obj_set_style_bg_color((lv_obj_t *)obj, COLOR_RED, LV_PART_MAIN);
+    }
+}
+
+static void start_blink_animation(void) {
+    if (!screen_bg) return;
+
+    lv_anim_init(&blink_anim);
+    lv_anim_set_var(&blink_anim, screen_bg);
+    lv_anim_set_values(&blink_anim, 0, 1);
+    lv_anim_set_time(&blink_anim, 250);  // 250ms to go from black to red
+    lv_anim_set_playback_time(&blink_anim, 250);  // 250ms to go back from red to black
+    lv_anim_set_repeat_count(&blink_anim, LV_ANIM_REPEAT_INFINITE);
+    lv_anim_set_exec_cb(&blink_anim, bg_blink_anim_cb);
+    lv_anim_set_path_cb(&blink_anim, lv_anim_path_step);
+    lv_anim_start(&blink_anim);
+}
+
+static void stop_blink_animation(void) {
+    if (!screen_bg) return;
+
+    lv_anim_del(screen_bg, NULL);
+    lv_obj_set_style_bg_color(screen_bg, COLOR_BLACK, LV_PART_MAIN);
 }
 
 static void position_markers(lv_obj_t *marker, int position) {
@@ -55,6 +87,8 @@ static void position_markers(lv_obj_t *marker, int position) {
 void mth_gauge_set_temp(int32_t v) {
     if (!temp_arc) return;
 
+    static bool is_blinking = false;
+
     lv_anim_t a;
     lv_anim_init(&a);
     lv_anim_set_var(&a, temp_arc);
@@ -73,6 +107,15 @@ void mth_gauge_set_temp(int32_t v) {
         lv_obj_set_style_arc_color(temp_arc, COLOR_AMBER, LV_PART_INDICATOR);
     } else {
         lv_obj_set_style_arc_color(temp_arc, COLOR_RED, LV_PART_INDICATOR);
+    }
+
+    // Start or stop blinking animation only when crossing threshold
+    if (v > temp_alert_threshold && !is_blinking) {
+        start_blink_animation();
+        is_blinking = true;
+    } else if (v <= temp_alert_threshold && is_blinking) {
+        stop_blink_animation();
+        is_blinking = false;
     }
 
     static char temp_text[8];
@@ -184,7 +227,17 @@ static void make_temp_digital(void) {
     lv_obj_align(temp_unit_label, LV_ALIGN_CENTER, 0, 30);
 }
 
+static void make_screen_background(void) {
+    screen_bg = lv_obj_create(lv_scr_act());
+    lv_obj_set_size(screen_bg, LV_PCT(100), LV_PCT(100));
+    lv_obj_set_style_bg_color(screen_bg, COLOR_BLACK, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(screen_bg, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_set_style_border_width(screen_bg, 0, LV_PART_MAIN);
+    lv_obj_move_background(screen_bg);
+}
+
 void mth_gauge_oil_temp_init(void) {
+    make_screen_background();
     make_temp_arc();
     make_temp_border();
     make_temp_redline();
