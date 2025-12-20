@@ -10,6 +10,18 @@ void setup()
   Serial.begin(115200);
   Touch_Init();
   lcd_lvgl_Init();
+
+  // Custom configuration
+  if (example_lvgl_lock(-1)) 
+  {   
+    // Set the screen in Dark. Not sure if here is the correct place to put this
+    lv_obj_set_style_bg_color(lv_scr_act(), lv_color_hex(0x000000), 0); 
+
+    mth_gauge_oil_temp_init();
+    
+    // Release the mutex
+    example_lvgl_unlock();
+  }
 }
 
 void loop()

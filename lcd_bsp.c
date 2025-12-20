@@ -124,25 +124,9 @@ void lcd_lvgl_Init(void)
   lvgl_mux = xSemaphoreCreateMutex(); //mutex semaphores
   assert(lvgl_mux);
   xTaskCreate(example_lvgl_port_task, "LVGL", EXAMPLE_LVGL_TASK_STACK_SIZE, NULL, EXAMPLE_LVGL_TASK_PRIORITY, NULL);
-  if (example_lvgl_lock(-1)) 
-  {   
-    // lv_demo_widgets();      /* A widgets example */
-    // lv_demo_music();        /* A modern, smartphone-like music player demo. */
-    // lv_demo_stress();       /* A stress test for LVGL. */
-    // lv_demo_benchmark();    /* A demo to measure the performance of LVGL or to compare different settings. */
-    
-    
-    // Set the screen in Dark. Not sure if here is the correct place to put this
-    lv_obj_set_style_bg_color(lv_scr_act(), lv_color_hex(0x000000), 0); 
-
-    mth_gauge_oil_temp_init();
-    
-    // Release the mutex
-    example_lvgl_unlock();
-  }
 }
 
-static bool example_lvgl_lock(int timeout_ms)
+bool example_lvgl_lock(int timeout_ms)
 {
   assert(lvgl_mux && "bsp_display_start must be called first");
 
@@ -150,7 +134,7 @@ static bool example_lvgl_lock(int timeout_ms)
   return xSemaphoreTake(lvgl_mux, timeout_ticks) == pdTRUE;
 }
 
-static void example_lvgl_unlock(void)
+void example_lvgl_unlock(void)
 {
   assert(lvgl_mux && "bsp_display_start must be called first");
   xSemaphoreGive(lvgl_mux);
