@@ -1,60 +1,7 @@
 #include "src/display/lcd_bsp.h"
 #include "src/touch/FT3168.h"
 #include "src/gauges/mth_gauges.h"
-#include "ESP32_NOW.h"
-#include "WiFi.h"
-#include <vector>
-
-/* --- Telemetry Structure --- */
-typedef struct __attribute__((packed)) {
-  float oilTemp;
-  float waterTemp;
-  uint32_t engineRPM;
-  float oilPressure;
-  float brakePressure;
-  int brakePercent;
-  float throttlePos;
-  float speed;
-  float accelPos;
-} TelemetryData;
-
-// Global variable - Initialize with zeros
-TelemetryData latestData = {0};
-bool dataReceived = false; 
-
-#define ESPNOW_WIFI_CHANNEL 6
-
-/* --- ESP-NOW Peer Class --- */
-class ESP_NOW_Peer_Class : public ESP_NOW_Peer {
-public:
-  ESP_NOW_Peer_Class(const uint8_t *mac_addr, uint8_t channel, wifi_interface_t iface, const uint8_t *lmk) 
-    : ESP_NOW_Peer(mac_addr, channel, iface, lmk) {}
-
-  bool add_peer() { return add(); }
-
-  // This is the function that handles the data
-  void onReceive(const uint8_t *data, size_t len, bool broadcast) {
-    if (len == sizeof(TelemetryData)) {
-      memcpy(&latestData, data, sizeof(TelemetryData));
-      dataReceived = true; 
-    }
-  }
-};
-
-std::vector<ESP_NOW_Peer_Class *> masters;
-
-/* --- Callback for new masters --- */
-void register_new_master(const esp_now_recv_info_t *info, const uint8_t *data, int len, void *arg) {
-  if (memcmp(info->des_addr, ESP_NOW.BROADCAST_ADDR, 6) == 0) {
-    ESP_NOW_Peer_Class *new_master = new ESP_NOW_Peer_Class(info->src_addr, ESPNOW_WIFI_CHANNEL, WIFI_IF_STA, nullptr);
-    if (!new_master->add_peer()) {
-      delete new_master;
-      return;
-    }
-    masters.push_back(new_master);
-    Serial.println("Master Registered");
-  }
-}
+#include "src/communication/esp_now_receiver.h"
 
 void setup() {
   Serial.begin(115200);
@@ -64,25 +11,14 @@ void setup() {
   Touch_Init();
   lcd_lvgl_Init();
 
-  if (example_lvgl_lock(-1)) {   
-    lv_obj_set_style_bg_color(lv_scr_act(), lv_color_hex(0x000000), 0); 
+  if (example_lvgl_lock(-1)) {
+    lv_obj_set_style_bg_color(lv_scr_act(), lv_color_hex(0x000000), 0);
     mth_gauge_oil_temp_init();
     example_lvgl_unlock();
   }
 
-  // 2. Initialize Wi-Fi
-  WiFi.mode(WIFI_STA);
-  WiFi.setChannel(ESPNOW_WIFI_CHANNEL);
-  while (!WiFi.STA.started()) { delay(100); }
-
-  // 3. Initialize ESP-NOW
-  if (!ESP_NOW.begin()) {
-    Serial.println("ESP-NOW Init Failed");
-    ESP.restart();
-  }
-
-  ESP_NOW.onNewPeer(register_new_master, nullptr);
-  Serial.println("Receiver System Ready");
+  // 2. Initialize ESP-NOW Receiver (Wi-Fi + ESP-NOW)
+  espnow_receiver_init();
 }
 
 void loop() {
