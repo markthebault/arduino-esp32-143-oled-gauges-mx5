@@ -13,12 +13,14 @@ static lv_obj_t *screen_bg;
 static lv_anim_t blink_anim;
 
 // Color palette
-#define COLOR_AMBER   lv_color_hex(0xFA8C00)
 #define COLOR_BLACK   lv_color_hex(0x000000)
-#define COLOR_RED     lv_color_hex(0xFF0000)
-#define COLOR_WHITE   lv_color_hex(0xFFFFFF)
-#define COLOR_GREY    lv_color_hex(0x808080)
-#define COLOR_GREEN   lv_color_hex(0x00FF00)
+
+#define COLOR_WHITE   lv_color_hex(0xE6E6E6)   // Not full white. Reduces glare and burn-in
+#define COLOR_GREY    lv_color_hex(0x7A7A7A)   // Neutral UI text
+
+#define COLOR_GREEN   lv_color_hex(0x00C853)   // Primary normal state
+#define COLOR_AMBER   lv_color_hex(0xF2A900)   // Warning. Slightly less harsh than FA8C00
+#define COLOR_RED     lv_color_hex(0xE53935)   // Alert. OLED-safe red
 
 // Attributes
 const int dimension = (EXAMPLE_LCD_H_RES > EXAMPLE_LCD_V_RES) ? EXAMPLE_LCD_H_RES : EXAMPLE_LCD_V_RES;
