@@ -2,8 +2,9 @@
 extern "C" {
 #endif
 
-#include "fonts/montserrat_bold_80.h"
-#include "fonts/fa_icons_48.h"
+// #include "fonts/montserrat_bold_80.h"
+#include "fonts/montserrat_bold_number_120.h"
+#include "fonts/fa_icons_54.h"
 #include "mth_gauges.h"
 #include <stdio.h>
 #include <math.h>
@@ -218,7 +219,7 @@ static void make_temp_redline(void) {
 static void make_temp_digital(void) {
     static lv_style_t style_temp_text;
     lv_style_init(&style_temp_text);
-    lv_style_set_text_font(&style_temp_text, &montserrat_bold_80);
+    lv_style_set_text_font(&style_temp_text, &montserrat_bold_number_120);
     lv_style_set_text_color(&style_temp_text, COLOR_WHITE);
 
     temp_label = lv_label_create(lv_scr_act());
@@ -228,20 +229,20 @@ static void make_temp_digital(void) {
 
     static lv_style_t style_unit_text;
     lv_style_init(&style_unit_text);
-    lv_style_set_text_font(&style_unit_text, &lv_font_montserrat_32);
+    lv_style_set_text_font(&style_unit_text, &lv_font_montserrat_48);
     lv_style_set_text_color(&style_unit_text, COLOR_AMBER);
 
     lv_obj_t *temp_unit_label = lv_label_create(lv_scr_act());
     lv_label_set_text(temp_unit_label, "°C");
     lv_obj_add_style(temp_unit_label, &style_unit_text, 0);
-    lv_obj_align(temp_unit_label, LV_ALIGN_CENTER, 0, 30);
+    lv_obj_align(temp_unit_label, LV_ALIGN_CENTER, 0, 55);
 }
 
 static void make_fuel_icon(void) {
     static lv_style_t style_icon;
     lv_style_init(&style_icon);
-    lv_style_set_text_font(&style_icon, &fa_icons_48);
-    lv_style_set_text_color(&style_icon, COLOR_WHITE);
+    lv_style_set_text_font(&style_icon, &fa_icons_54);
+    lv_style_set_text_color(&style_icon, COLOR_AMBER);
 
     fuel_icon = lv_label_create(lv_scr_act());
     lv_label_set_text(fuel_icon, OIL_SYMBOL);
