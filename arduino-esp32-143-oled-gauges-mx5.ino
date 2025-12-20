@@ -26,7 +26,11 @@ void setup()
 
 void loop()
 {
-  set_oil_temp_animation();
+  if (example_lvgl_lock(-1))
+  {
+    set_oil_temp_animation();
+    example_lvgl_unlock();
+  }
 
   // Small delay to make updates smooth (~50Hz)
   delay(20);
