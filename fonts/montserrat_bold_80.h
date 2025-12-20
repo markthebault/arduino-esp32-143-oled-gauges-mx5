@@ -1,7 +1,7 @@
 /*******************************************************************************
  * Size: 80 px
  * Bpp: 1
- * Opts: --bpp 1 --size 80 --no-compress --stride 1 --align 1 --font Montserrat-Bold.ttf --range 32-127 --format lvgl -o montserrat_bold_80.c
+ * Opts: --bpp 1 --size 80 --no-compress --stride 1 --align 1 --font Montserrat-Bold.ttf --symbols 0xF613 --range 32-127 --format lvgl -o montserrat_bold_80.c
  ******************************************************************************/
 
 #ifdef __has_include
@@ -31,7 +31,7 @@
  *----------------*/
 
 /*Store the image of the glyphs*/
-static LV_ATTRIBUTE_LARGE_CONST const uint8_t glyph_bitmap[] = {
+static LV_ATTRIBUTE_LARGE_CONST const uint8_t montserrat_bold_80_glyph_bitmap[] = {
     /* U+0020 " " */
     0x0,
 
@@ -3610,7 +3610,7 @@ static LV_ATTRIBUTE_LARGE_CONST const uint8_t glyph_bitmap[] = {
  *  GLYPH DESCRIPTION
  *--------------------*/
 
-static const lv_font_fmt_txt_glyph_dsc_t glyph_dsc[] = {
+static const lv_font_fmt_txt_glyph_dsc_t montserrat_bold_80_glyph_dsc[] = {
     {.bitmap_index = 0, .adv_w = 0, .box_w = 0, .box_h = 0, .ofs_x = 0, .ofs_y = 0} /* id = 0 reserved */,
     {.bitmap_index = 0, .adv_w = 362, .box_w = 1, .box_h = 1, .ofs_x = 0, .ofs_y = 0},
     {.bitmap_index = 1, .adv_w = 370, .box_w = 15, .box_h = 58, .ofs_x = 4, .ofs_y = -1},
@@ -3716,7 +3716,7 @@ static const lv_font_fmt_txt_glyph_dsc_t glyph_dsc[] = {
 
 
 /*Collect the unicode lists and glyph_id offsets*/
-static const lv_font_fmt_txt_cmap_t cmaps[] =
+static const lv_font_fmt_txt_cmap_t montserrat_bold_80_cmaps[] =
 {
     {
         .range_start = 32, .range_length = 95, .glyph_id_start = 1,
@@ -3736,13 +3736,13 @@ static  lv_font_fmt_txt_glyph_cache_t cache;
 #endif
 
 #if LVGL_VERSION_MAJOR >= 8
-static const lv_font_fmt_txt_dsc_t font_dsc = {
+static const lv_font_fmt_txt_dsc_t montserrat_bold_80_font_dsc = {
 #else
-static lv_font_fmt_txt_dsc_t font_dsc = {
+static lv_font_fmt_txt_dsc_t montserrat_bold_80_font_dsc = {
 #endif
-    .glyph_bitmap = glyph_bitmap,
-    .glyph_dsc = glyph_dsc,
-    .cmaps = cmaps,
+    .glyph_bitmap = montserrat_bold_80_glyph_bitmap,
+    .glyph_dsc = montserrat_bold_80_glyph_dsc,
+    .cmaps = montserrat_bold_80_cmaps,
     .kern_dsc = NULL,
     .kern_scale = 0,
     .cmap_num = 1,
@@ -3779,7 +3779,8 @@ lv_font_t montserrat_bold_80 = {
     .underline_position = -8,
     .underline_thickness = 4,
 #endif
-    .dsc = &font_dsc,          /*The custom font data. Will be accessed by `get_glyph_bitmap/dsc` */
+    // .static_bitmap = 0,
+    .dsc = &montserrat_bold_80_font_dsc,          /*The custom font data. Will be accessed by `get_glyph_bitmap/dsc` */
 #if LV_VERSION_CHECK(8, 2, 0) || LVGL_VERSION_MAJOR >= 9
     .fallback = &lv_font_montserrat_48,
 #endif

@@ -3,6 +3,7 @@ extern "C" {
 #endif
 
 #include "fonts/montserrat_bold_80.h"
+#include "fonts/fa_icons_48.h"
 #include "mth_gauges.h"
 #include <stdio.h>
 #include <math.h>
@@ -13,6 +14,11 @@ static lv_obj_t *temp_arc;
 static lv_obj_t *temp_label;
 static lv_obj_t *screen_bg;
 static lv_anim_t blink_anim;
+static lv_obj_t *fuel_icon;
+
+// Icon symbols
+#define FUEL_SYMBOL "\xEF\x94\xAF"
+#define OIL_SYMBOL "\xEF\x98\x93"
 
 // Color palette
 #define COLOR_BLACK   lv_color_hex(0x000000)
@@ -231,6 +237,18 @@ static void make_temp_digital(void) {
     lv_obj_align(temp_unit_label, LV_ALIGN_CENTER, 0, 30);
 }
 
+static void make_fuel_icon(void) {
+    static lv_style_t style_icon;
+    lv_style_init(&style_icon);
+    lv_style_set_text_font(&style_icon, &fa_icons_48);
+    lv_style_set_text_color(&style_icon, COLOR_WHITE);
+
+    fuel_icon = lv_label_create(lv_scr_act());
+    lv_label_set_text(fuel_icon, OIL_SYMBOL);
+    lv_obj_add_style(fuel_icon, &style_icon, 0);
+    lv_obj_align(fuel_icon, LV_ALIGN_BOTTOM_MID, 0, -10);
+}
+
 static void make_screen_background(void) {
     screen_bg = lv_obj_create(lv_scr_act());
     lv_obj_set_size(screen_bg, LV_PCT(100), LV_PCT(100));
@@ -246,6 +264,7 @@ void mth_gauge_oil_temp_init(void) {
     make_temp_border();
     make_temp_redline();
     make_temp_digital();
+    make_fuel_icon();
 }
 
 #ifdef __cplusplus
