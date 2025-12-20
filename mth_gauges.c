@@ -15,12 +15,17 @@ static lv_obj_t *temp_label;
 #define COLOR_BLACK   lv_color_hex(0x000000)
 #define COLOR_RED     lv_color_hex(0xFF0000)
 #define COLOR_WHITE   lv_color_hex(0xFFFFFF)
+#define COLOR_GREY    lv_color_hex(0x808080)
+#define COLOR_GREEN   lv_color_hex(0x00FF00)
 
 // Attributes
 const int dimension = (EXAMPLE_LCD_H_RES > EXAMPLE_LCD_V_RES) ? EXAMPLE_LCD_H_RES : EXAMPLE_LCD_V_RES;
 const int temp_min = 60;
 const int temp_max = 160;
 const int temp_redline = 135;
+const int temp_zone_green = 80;
+const int temp_zone_orange = 120;
+const int temp_zone_red = 127;
 const int temp_arc_width = 24;
 const int temp_line_width = 4;
 const int temp_arc_size = dimension - (temp_line_width * 12);
@@ -59,10 +64,15 @@ void mth_gauge_set_temp(int32_t v) {
     lv_anim_set_path_cb(&a, lv_anim_path_linear);
     lv_anim_start(&a);
 
-    if (v >= temp_redline) {
-        lv_obj_set_style_arc_color(temp_arc, COLOR_RED, LV_PART_INDICATOR);
-    } else {
+    // Set color based on temperature ranges
+    if (v < temp_zone_green) {
+        lv_obj_set_style_arc_color(temp_arc, COLOR_GREY, LV_PART_INDICATOR);
+    } else if (v < temp_zone_orange) {
+        lv_obj_set_style_arc_color(temp_arc, COLOR_GREEN, LV_PART_INDICATOR);
+    } else if (v < temp_zone_red) {
         lv_obj_set_style_arc_color(temp_arc, COLOR_AMBER, LV_PART_INDICATOR);
+    } else {
+        lv_obj_set_style_arc_color(temp_arc, COLOR_RED, LV_PART_INDICATOR);
     }
 
     static char temp_text[8];
