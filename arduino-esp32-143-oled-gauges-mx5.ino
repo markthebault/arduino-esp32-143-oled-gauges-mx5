@@ -45,12 +45,12 @@ void set_oil_temp_animation() {
   int32_t temp_val;
 
   if (t < 3000UL) {
-    // Sweep Up (0 to 180)
-    temp_val = (int32_t)((180UL * t) / 3000UL);
+    // Sweep Up (60 to 160)
+    temp_val = 60 + (int32_t)((100UL * t) / 3000UL);
   } else {
-    // Sweep Down (180 to 0)
+    // Sweep Down (160 to 60)
     unsigned long t2 = t - 3000UL;
-    temp_val = (int32_t)(180UL - (180UL * t2) / 1000UL);
+    temp_val = 160 - (int32_t)((100UL * t2) / 1000UL);
   }
 
   // Update oil temperature gauge
