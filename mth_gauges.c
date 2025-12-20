@@ -2,9 +2,11 @@
 extern "C" {
 #endif
 
+#include "fonts/montserrat_bold_80.h"
 #include "mth_gauges.h"
 #include <stdio.h>
 #include <math.h>
+
 
 // Global components
 static lv_obj_t *temp_arc;
@@ -28,7 +30,7 @@ const int temp_min = 60;
 const int temp_max = 160;
 const int temp_zone_green = 80;
 const int temp_zone_orange = 120;
-const int temp_zone_red = 130; // when the color of the cusor changes to red
+const int temp_zone_red = 130; // when the color of the cursor changes to red
 const int temp_redline = 130; // red arc at the end of the gauge
 const int temp_alert_threshold = 135;  // Screen blinks red when exceeding this value
 const int temp_arc_width = 24;
@@ -210,17 +212,17 @@ static void make_temp_redline(void) {
 static void make_temp_digital(void) {
     static lv_style_t style_temp_text;
     lv_style_init(&style_temp_text);
-    lv_style_set_text_font(&style_temp_text, &lv_font_montserrat_48);
+    lv_style_set_text_font(&style_temp_text, &montserrat_bold_80);
     lv_style_set_text_color(&style_temp_text, COLOR_WHITE);
 
     temp_label = lv_label_create(lv_scr_act());
     lv_label_set_text(temp_label, "0");
     lv_obj_add_style(temp_label, &style_temp_text, 0);
-    lv_obj_align(temp_label, LV_ALIGN_CENTER, 0, -10);
+    lv_obj_align(temp_label, LV_ALIGN_CENTER, 0, -15);
 
     static lv_style_t style_unit_text;
     lv_style_init(&style_unit_text);
-    lv_style_set_text_font(&style_unit_text, &lv_font_montserrat_24);
+    lv_style_set_text_font(&style_unit_text, &lv_font_montserrat_32);
     lv_style_set_text_color(&style_unit_text, COLOR_AMBER);
 
     lv_obj_t *temp_unit_label = lv_label_create(lv_scr_act());
