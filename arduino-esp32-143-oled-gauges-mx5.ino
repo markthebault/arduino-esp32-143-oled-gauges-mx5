@@ -43,18 +43,18 @@ void loop()
 
 /////////////// Custom Loop Functions ///////////////
 void set_oil_temp_animation() {
-  const unsigned long period = 4000UL;
+  const unsigned long period = 12000UL;
   unsigned long t = millis() % period;
 
   int32_t temp_val;
 
-  if (t < 3000UL) {
+  if (t < 9000UL) {
     // Sweep Up (60 to 160)
-    temp_val = 60 + (int32_t)((100UL * t) / 3000UL);
+    temp_val = 60 + (int32_t)((100UL * t) / 9000UL);
   } else {
     // Sweep Down (160 to 60)
-    unsigned long t2 = t - 3000UL;
-    temp_val = 160 - (int32_t)((100UL * t2) / 1000UL);
+    unsigned long t2 = t - 9000UL;
+    temp_val = 160 - (int32_t)((100UL * t2) / 3000UL);
   }
 
   // Update oil temperature gauge
