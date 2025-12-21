@@ -3,8 +3,8 @@
 #include "lcd_config.h"
 #include "../touch/FT3168.h"
 #include "read_lcd_id_bsp.h"
-#include "../gauges/mth_gauges.h"
-// #include "lv_examples.h"
+
+
 static SemaphoreHandle_t lvgl_mux = NULL; //mutex semaphores
 #define LCD_HOST    SPI2_HOST
 
@@ -37,10 +37,6 @@ static const sh8601_lcd_init_cmd_t co5300_lcd_init_cmds[] =
   {0x51, (uint8_t []){0xFF}, 1, 0},
   //{0x36, (uint8_t []){0x60}, 1, 0},
 };
-
-/* Gauge implementation moved to mth_gauges.c */
-
-/* mth_gauge_speedometer_dark has been moved to mth_gauges.c */
 
 ///////////////////////
 ///////////////////////

@@ -1,6 +1,7 @@
 #include "src/display/lcd_bsp.h"
 #include "src/touch/FT3168.h"
-#include "src/gauges/mth_gauges.h"
+#include "src/gauges/water_temp_gauge.h"
+#include "src/gauges/oil_temp_gauge.h"
 #include "src/communication/esp_now_receiver.h"
 
 void setup() {
@@ -53,6 +54,6 @@ void set_oil_temp_animation() {
   }
 
   // Update oil temperature gauge
-  mth_gauge_set_temp(temp_val);
+  oil_temp_gauge_set_value(temp_val);
 }
 /////////////////////////////////////////////////////
