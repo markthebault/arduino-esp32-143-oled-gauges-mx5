@@ -13,7 +13,8 @@ void setup() {
 
   if (example_lvgl_lock(-1)) {
     lv_obj_set_style_bg_color(lv_scr_act(), lv_color_hex(0x000000), 0);
-    mth_gauge_oil_temp_init();
+    oil_temp_gauge_init();
+    // water_temp_gauge_init();
     example_lvgl_unlock();
   }
 
@@ -26,7 +27,8 @@ void loop() {
   if (dataReceived) {
     if (example_lvgl_lock(-1)) {
       // Cast the float to the expected int32_t for the gauge
-      mth_gauge_set_temp((int32_t)latestData.oilTemp);
+      oil_temp_gauge_set_value((int32_t)latestData.oilTemp);
+      // water_temp_gauge_set_value((int32_t)latestData.oilTemp);
       example_lvgl_unlock();
     }
   }
