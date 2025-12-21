@@ -30,6 +30,16 @@
  *    BITMAPS
  *----------------*/
 
+// Icon	Unicode	UTF-8 Hex (for your "Symbols" box)
+// Gas Pump	0xF52F	\xEF\x94\xAF
+// Oil Can	0xF613	\xEF\x98\x93
+// Engine (Check)	0xF593	\xEF\x96\x93
+// Water Temp	0xF2C9	\xEF\x8B\x89
+// Battery (Full)	0xF240	\xEF\x89\x80
+// Tachometer	0xF3FD	\xEF\x8F\xBD
+// Wrench	0xF0AD	\xEF\x82\xAD
+// Car Battery	0xF5DF	\xEF\x97\x9F
+
 /*Store the image of the glyphs*/
 static LV_ATTRIBUTE_LARGE_CONST const uint8_t fa_icons_54_glyph_bitmap[] = {
     /* U+F011 "" */

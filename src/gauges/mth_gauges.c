@@ -10,16 +10,24 @@ extern "C" {
 #include <math.h>
 
 
-// Global components
+// Global components - Oil Temp
 static lv_obj_t *temp_arc;
 static lv_obj_t *temp_label;
 static lv_obj_t *screen_bg;
 static lv_anim_t blink_anim;
 static lv_obj_t *fuel_icon;
 
+// Global components - Water Temp
+static lv_obj_t *water_temp_arc;
+static lv_obj_t *water_temp_label;
+static lv_obj_t *water_screen_bg;
+static lv_anim_t water_blink_anim;
+static lv_obj_t *water_icon;
+
 // Icon symbols
 #define FUEL_SYMBOL "\xEF\x94\xAF"
 #define OIL_SYMBOL "\xEF\x98\x93"
+#define WATER_SYMBOL "\xEF\x8B\x89"  // Person Swimming icon (U+F3FD)
 
 // Color palette
 #define COLOR_BLACK   lv_color_hex(0x000000)
@@ -266,6 +274,245 @@ void mth_gauge_oil_temp_init(void) {
     make_temp_redline();
     make_temp_digital();
     make_fuel_icon();
+}
+
+// ============================================================================
+// WATER TEMPERATURE GAUGE
+// ============================================================================
+
+// Water temp attributes
+const int water_temp_min = 60;
+const int water_temp_max = 140;
+const int water_temp_zone_green = 80;
+const int water_temp_zone_orange = 105;
+const int water_temp_zone_red = 110;
+const int water_temp_redline = 110;
+const int water_temp_alert_threshold = 115;
+const int water_temp_arc_width = 24;
+const int water_temp_line_width = 4;
+const int water_temp_arc_size = dimension - (water_temp_line_width * 12);
+const int water_arc_start = 135;
+const int water_arc_end = 405;
+const float water_marker_gap = ((float)(water_arc_end - water_arc_start)) / ((water_temp_max - water_temp_min) / 10);
+
+static void water_bg_blink_anim_cb(void *obj, int32_t value) {
+    if (value == 0) {
+        lv_obj_set_style_bg_color((lv_obj_t *)obj, COLOR_BLACK, LV_PART_MAIN);
+    } else {
+        lv_obj_set_style_bg_color((lv_obj_t *)obj, COLOR_RED, LV_PART_MAIN);
+    }
+}
+
+static void start_water_blink_animation(void) {
+    if (!water_screen_bg) return;
+
+    lv_anim_init(&water_blink_anim);
+    lv_anim_set_var(&water_blink_anim, water_screen_bg);
+    lv_anim_set_values(&water_blink_anim, 0, 1);
+    lv_anim_set_time(&water_blink_anim, 250);
+    lv_anim_set_playback_time(&water_blink_anim, 250);
+    lv_anim_set_repeat_count(&water_blink_anim, LV_ANIM_REPEAT_INFINITE);
+    lv_anim_set_exec_cb(&water_blink_anim, water_bg_blink_anim_cb);
+    lv_anim_set_path_cb(&water_blink_anim, lv_anim_path_step);
+    lv_anim_start(&water_blink_anim);
+}
+
+static void stop_water_blink_animation(void) {
+    if (!water_screen_bg) return;
+
+    lv_anim_del(water_screen_bg, NULL);
+    lv_obj_set_style_bg_color(water_screen_bg, COLOR_BLACK, LV_PART_MAIN);
+}
+
+static void position_water_markers(lv_obj_t *marker, int position) {
+    lv_obj_set_size(marker, water_temp_arc_size + (water_temp_line_width * 4),
+                    water_temp_arc_size + (water_temp_line_width * 4));
+    lv_obj_align(marker, LV_ALIGN_CENTER, 0, 0);
+
+    lv_obj_set_style_arc_width(marker, water_temp_arc_width + (water_temp_line_width * 4), LV_PART_MAIN);
+    lv_obj_set_style_arc_rounded(marker, false, LV_PART_MAIN);
+    lv_obj_set_style_arc_color(marker, COLOR_WHITE, LV_PART_MAIN);
+
+    lv_arc_set_bg_angles(marker, water_arc_start + (position * water_marker_gap),
+                        water_arc_start + (position * water_marker_gap) + 1);
+
+    lv_obj_remove_style(marker, NULL, LV_PART_KNOB);
+    lv_obj_remove_style(marker, NULL, LV_PART_INDICATOR);
+}
+
+void mth_gauge_set_water_temp(int32_t v) {
+    if (!water_temp_arc) return;
+
+    static bool is_blinking = false;
+
+    lv_anim_t a;
+    lv_anim_init(&a);
+    lv_anim_set_var(&a, water_temp_arc);
+    lv_anim_set_values(&a, lv_arc_get_value(water_temp_arc), v);
+    lv_anim_set_time(&a, 200);
+    lv_anim_set_exec_cb(&a, arc_anim_cb);
+    lv_anim_set_path_cb(&a, lv_anim_path_linear);
+    lv_anim_start(&a);
+
+    // Set color based on temperature ranges
+    if (v < water_temp_zone_green) {
+        lv_obj_set_style_arc_color(water_temp_arc, COLOR_GREY, LV_PART_INDICATOR);
+    } else if (v < water_temp_zone_orange) {
+        lv_obj_set_style_arc_color(water_temp_arc, COLOR_GREEN, LV_PART_INDICATOR);
+    } else if (v < water_temp_zone_red) {
+        lv_obj_set_style_arc_color(water_temp_arc, COLOR_AMBER, LV_PART_INDICATOR);
+    } else {
+        lv_obj_set_style_arc_color(water_temp_arc, COLOR_RED, LV_PART_INDICATOR);
+    }
+
+    // Start or stop blinking animation when crossing threshold
+    if (v >= water_temp_alert_threshold && !is_blinking) {
+        start_water_blink_animation();
+        is_blinking = true;
+    } else if (v < water_temp_alert_threshold && is_blinking) {
+        stop_water_blink_animation();
+        is_blinking = false;
+    }
+
+    static char temp_text[8];
+    snprintf(temp_text, sizeof(temp_text), "%d", v);
+    lv_label_set_text(water_temp_label, temp_text);
+}
+
+static void make_water_temp_arc(void) {
+    water_temp_arc = lv_arc_create(lv_scr_act());
+
+    lv_obj_set_size(water_temp_arc, water_temp_arc_size, water_temp_arc_size);
+    lv_obj_align(water_temp_arc, LV_ALIGN_CENTER, 0, 0);
+    lv_arc_set_bg_angles(water_temp_arc, water_arc_start + 2, water_arc_end - 1);
+
+    lv_obj_set_style_arc_color(water_temp_arc, COLOR_BLACK, LV_PART_MAIN);
+    lv_obj_set_style_arc_color(water_temp_arc, COLOR_AMBER, LV_PART_INDICATOR);
+    lv_obj_set_style_arc_rounded(water_temp_arc, false, LV_PART_INDICATOR);
+    lv_obj_set_style_arc_width(water_temp_arc, water_temp_arc_width, LV_PART_INDICATOR);
+
+    lv_obj_remove_style(water_temp_arc, NULL, LV_PART_KNOB);
+
+    lv_arc_set_range(water_temp_arc, water_temp_min, water_temp_max);
+    lv_arc_set_value(water_temp_arc, water_temp_min);
+}
+
+static void make_water_temp_border(void) {
+    lv_obj_t *water_temp_arc_border = lv_arc_create(lv_scr_act());
+
+    lv_obj_set_size(water_temp_arc_border,
+                    water_temp_arc_size - (water_temp_arc_width * 2) - (water_temp_line_width * 2),
+                    water_temp_arc_size - (water_temp_arc_width * 2) - (water_temp_line_width * 2));
+    lv_obj_align(water_temp_arc_border, LV_ALIGN_CENTER, 0, 0);
+    lv_arc_set_bg_angles(water_temp_arc_border, water_arc_start, water_arc_end);
+
+    lv_obj_set_style_arc_width(water_temp_arc_border, water_temp_line_width, LV_PART_MAIN);
+    lv_obj_set_style_arc_rounded(water_temp_arc_border, false, LV_PART_MAIN);
+    lv_obj_set_style_arc_color(water_temp_arc_border, COLOR_WHITE, LV_PART_MAIN);
+
+    lv_obj_remove_style(water_temp_arc_border, NULL, LV_PART_KNOB);
+    lv_obj_remove_style(water_temp_arc_border, NULL, LV_PART_INDICATOR);
+
+    // Create markers every 10 degrees (60, 70, 80, 90, 100, 110, 120)
+    int water_temp_marker_count = ((water_temp_max - water_temp_min) / 10) + 1;
+
+    // Style for marker labels
+    static lv_style_t style_marker_text;
+    lv_style_init(&style_marker_text);
+    lv_style_set_text_font(&style_marker_text, &lv_font_montserrat_24);
+    lv_style_set_text_color(&style_marker_text, COLOR_WHITE);
+
+    for (int i = 0; i < water_temp_marker_count; i++) {
+        lv_obj_t *marker = lv_arc_create(lv_scr_act());
+        position_water_markers(marker, i);
+
+        // Calculate position for text label
+        int temp_value = water_temp_min + (i * 10);
+        float angle_rad = (water_arc_start + (i * water_marker_gap)) * 3.14159f / 180.0f;
+        int radius = (water_temp_arc_size / 2) - water_temp_arc_width - 40;
+        int label_x = (int)(radius * cosf(angle_rad));
+        int label_y = (int)(radius * sinf(angle_rad));
+
+        // Create text label
+        lv_obj_t *label = lv_label_create(lv_scr_act());
+        char text[4];
+        snprintf(text, sizeof(text), "%d", temp_value);
+        lv_label_set_text(label, text);
+        lv_obj_add_style(label, &style_marker_text, 0);
+        lv_obj_align(label, LV_ALIGN_CENTER, label_x, label_y);
+    }
+}
+
+static void make_water_temp_redline(void) {
+    lv_obj_t *water_temp_redline_marker = lv_arc_create(lv_scr_act());
+
+    lv_obj_set_size(water_temp_redline_marker, dimension, dimension);
+    lv_obj_align(water_temp_redline_marker, LV_ALIGN_CENTER, 0, 0);
+    lv_arc_set_bg_angles(
+        water_temp_redline_marker,
+        water_arc_start + ((water_arc_end - water_arc_start) *
+            ((float)(water_temp_redline - water_temp_min) / (water_temp_max - water_temp_min))),
+        water_arc_end
+    );
+
+    lv_obj_set_style_arc_color(water_temp_redline_marker, COLOR_RED, LV_PART_MAIN);
+    lv_obj_set_style_arc_rounded(water_temp_redline_marker, false, LV_PART_MAIN);
+    lv_obj_set_style_arc_width(water_temp_redline_marker, water_temp_line_width * 2, LV_PART_MAIN);
+
+    lv_obj_remove_style(water_temp_redline_marker, NULL, LV_PART_KNOB);
+    lv_obj_remove_style(water_temp_redline_marker, NULL, LV_PART_INDICATOR);
+}
+
+static void make_water_temp_digital(void) {
+    static lv_style_t style_temp_text;
+    lv_style_init(&style_temp_text);
+    lv_style_set_text_font(&style_temp_text, &montserrat_bold_number_120);
+    lv_style_set_text_color(&style_temp_text, COLOR_WHITE);
+
+    water_temp_label = lv_label_create(lv_scr_act());
+    lv_label_set_text(water_temp_label, "0");
+    lv_obj_add_style(water_temp_label, &style_temp_text, 0);
+    lv_obj_align(water_temp_label, LV_ALIGN_CENTER, 0, -15);
+
+    static lv_style_t style_unit_text;
+    lv_style_init(&style_unit_text);
+    lv_style_set_text_font(&style_unit_text, &lv_font_montserrat_48);
+    lv_style_set_text_color(&style_unit_text, COLOR_AMBER);
+
+    lv_obj_t *temp_unit_label = lv_label_create(lv_scr_act());
+    lv_label_set_text(temp_unit_label, "°C");
+    lv_obj_add_style(temp_unit_label, &style_unit_text, 0);
+    lv_obj_align(temp_unit_label, LV_ALIGN_CENTER, 0, 55);
+}
+
+static void make_water_icon(void) {
+    static lv_style_t style_icon;
+    lv_style_init(&style_icon);
+    lv_style_set_text_font(&style_icon, &fa_icons_54);
+    lv_style_set_text_color(&style_icon, COLOR_AMBER);
+
+    water_icon = lv_label_create(lv_scr_act());
+    lv_label_set_text(water_icon, WATER_SYMBOL);
+    lv_obj_add_style(water_icon, &style_icon, 0);
+    lv_obj_align(water_icon, LV_ALIGN_BOTTOM_MID, 0, -10);
+}
+
+static void make_water_screen_background(void) {
+    water_screen_bg = lv_obj_create(lv_scr_act());
+    lv_obj_set_size(water_screen_bg, LV_PCT(100), LV_PCT(100));
+    lv_obj_set_style_bg_color(water_screen_bg, COLOR_BLACK, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(water_screen_bg, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_set_style_border_width(water_screen_bg, 0, LV_PART_MAIN);
+    lv_obj_move_background(water_screen_bg);
+}
+
+void mth_gauge_water_temp_init(void) {
+    make_water_screen_background();
+    make_water_temp_arc();
+    make_water_temp_border();
+    make_water_temp_redline();
+    make_water_temp_digital();
+    make_water_icon();
 }
 
 #ifdef __cplusplus
