@@ -3,10 +3,14 @@ extern "C" {
 #endif
 
 #include "gauge_common.h"
-#include "../fonts/montserrat_bold_number_120.h"
-#include "../fonts/fa_icons_54.h"
 #include <stdio.h>
 #include <math.h>
+
+// Include custom font definitions (only in this compilation unit)
+#if USE_CUSTOM_TEMP_FONT || USE_CUSTOM_ICON_FONT
+    #include "../fonts/montserrat_bold_number_120.h"
+    #include "../fonts/fa_icons_54.h"
+#endif
 
 // ============================================================================
 // ANIMATION CALLBACKS
@@ -133,7 +137,7 @@ void gauge_create_border_and_markers(const gauge_config_t *config) {
     // Style for marker labels
     static lv_style_t style_marker_text;
     lv_style_init(&style_marker_text);
-    lv_style_set_text_font(&style_marker_text, &lv_font_montserrat_24);
+    lv_style_set_text_font(&style_marker_text, FONT_MARKERS);
     lv_style_set_text_color(&style_marker_text, COLOR_WHITE);
 
     // Create markers and labels
@@ -145,7 +149,7 @@ void gauge_create_border_and_markers(const gauge_config_t *config) {
         // Calculate label position
         int temp_value = config->temp_min + (i * config->marker_interval);
         float angle_rad = (ARC_START_ANGLE + (i * marker_gap)) * 3.14159f / 180.0f;
-        int radius = (ARC_SIZE / 2) - ARC_WIDTH - 40;
+        int radius = (ARC_SIZE / 2) - ARC_WIDTH - MARKER_LABEL_OFFSET;
         int label_x = (int)(radius * cosf(angle_rad));
         int label_y = (int)(radius * sinf(angle_rad));
 
@@ -184,24 +188,24 @@ lv_obj_t* gauge_create_digital_display(void) {
     // Create main temperature text
     static lv_style_t style_temp_text;
     lv_style_init(&style_temp_text);
-    lv_style_set_text_font(&style_temp_text, &montserrat_bold_number_120);
+    lv_style_set_text_font(&style_temp_text, FONT_TEMP_MAIN);
     lv_style_set_text_color(&style_temp_text, COLOR_WHITE);
 
     lv_obj_t *temp_label = lv_label_create(lv_scr_act());
     lv_label_set_text(temp_label, "0");
     lv_obj_add_style(temp_label, &style_temp_text, 0);
-    lv_obj_align(temp_label, LV_ALIGN_CENTER, 0, -15);
+    lv_obj_align(temp_label, LV_ALIGN_CENTER, 0, TEMP_LABEL_Y_OFFSET);
 
     // Create unit text
     static lv_style_t style_unit_text;
     lv_style_init(&style_unit_text);
-    lv_style_set_text_font(&style_unit_text, &lv_font_montserrat_48);
+    lv_style_set_text_font(&style_unit_text, FONT_TEMP_UNIT);
     lv_style_set_text_color(&style_unit_text, COLOR_AMBER);
 
     lv_obj_t *temp_unit_label = lv_label_create(lv_scr_act());
     lv_label_set_text(temp_unit_label, "°C");
     lv_obj_add_style(temp_unit_label, &style_unit_text, 0);
-    lv_obj_align(temp_unit_label, LV_ALIGN_CENTER, 0, 55);
+    lv_obj_align(temp_unit_label, LV_ALIGN_CENTER, 0, TEMP_UNIT_Y_OFFSET);
 
     return temp_label;
 }
@@ -209,13 +213,28 @@ lv_obj_t* gauge_create_digital_display(void) {
 lv_obj_t* gauge_create_icon(const char *icon_symbol) {
     static lv_style_t style_icon;
     lv_style_init(&style_icon);
-    lv_style_set_text_font(&style_icon, &fa_icons_54);
+    lv_style_set_text_font(&style_icon, FONT_ICON);
     lv_style_set_text_color(&style_icon, COLOR_AMBER);
 
     lv_obj_t *icon = lv_label_create(lv_scr_act());
-    lv_label_set_text(icon, icon_symbol);
+
+    #if USE_CUSTOM_ICON_FONT
+        // Use Font Awesome icon symbol
+        lv_label_set_text(icon, icon_symbol);
+    #else
+        // Use text fallback for displays without custom icon fonts
+        // You can customize these symbols or use built-in LVGL symbols
+        if (icon_symbol == OIL_SYMBOL) {
+            lv_label_set_text(icon, "OIL");
+        } else if (icon_symbol == WATER_SYMBOL) {
+            lv_label_set_text(icon, "H2O");
+        } else {
+            lv_label_set_text(icon, "---");
+        }
+    #endif
+
     lv_obj_add_style(icon, &style_icon, 0);
-    lv_obj_align(icon, LV_ALIGN_BOTTOM_MID, 0, -10);
+    lv_obj_align(icon, LV_ALIGN_BOTTOM_MID, 0, ICON_Y_OFFSET);
 
     return icon;
 }

@@ -6,7 +6,49 @@ extern "C" {
 #endif
 
 #include "lvgl.h"
-#include "../display/lcd_config.h"
+
+// ============================================================================
+// SCREEN PROFILE SELECTION - PICK ONE
+// ============================================================================
+
+#if !defined(USE_SCREEN_466PX) && !defined(USE_SCREEN_240PX)
+    #define USE_SCREEN_466PX 
+    #warning "No screen profile defined in build flags. Defaulting to 466px."
+#endif
+
+// ============================================================================
+// SCREEN PROFILE DEFINITIONS
+// ============================================================================
+
+#ifdef USE_SCREEN_466PX
+    // 466px display - Original configuration (baseline, no scaling)
+    #define LCD_RES 466
+    #define GAUGE_SCALE 1.0f
+    // Fonts for 466px display (using custom fonts)
+    // Custom font declarations (defined in gauge_common.c)
+    extern const lv_font_t montserrat_bold_number_120;
+    extern const lv_font_t fa_icons_54;
+    #define FONT_TEMP_MAIN   &montserrat_bold_number_120  // Main temperature number (120px)
+    #define FONT_TEMP_UNIT   &lv_font_montserrat_48       // °C unit (48px)
+    #define FONT_MARKERS     &lv_font_montserrat_24       // Gauge markers (24px)
+    #define FONT_ICON        &fa_icons_54                 // Bottom icon (54px)
+    #define USE_CUSTOM_TEMP_FONT 1
+    #define USE_CUSTOM_ICON_FONT 1
+#endif
+
+#ifdef USE_SCREEN_240PX
+    // 240px display - Scaled down from 466px baseline
+    #define LCD_RES 240
+    #define GAUGE_SCALE 0.515f  // 240/466 ≈ 0.515
+    // Fonts for 240px display (using LVGL built-in fonts)
+    // Note: For optimal display, consider generating custom fonts at scaled sizes
+    #define FONT_TEMP_MAIN   &lv_font_montserrat_48     // Main temperature number (scaled from 120px)
+    #define FONT_TEMP_UNIT   &lv_font_montserrat_24     // °C unit (scaled from 48px)
+    #define FONT_MARKERS     &lv_font_montserrat_14     // Gauge markers (scaled from 24px)
+    #define FONT_ICON        &lv_font_montserrat_32     // Bottom icon (scaled from 54px)
+    #define USE_CUSTOM_TEMP_FONT 0
+    #define USE_CUSTOM_ICON_FONT 0
+#endif
 
 // ============================================================================
 // COLOR PALETTE
@@ -28,20 +70,26 @@ extern "C" {
 #define WATER_SYMBOL  "\xEF\x8B\x89"  // U+F2C9 - Thermometer
 
 // ============================================================================
-// COMMON GAUGE DIMENSIONS
+// COMMON GAUGE DIMENSIONS (Scaled)
 // ============================================================================
 
-// Calculate the larger dimension for square gauges
-#define GAUGE_DIMENSION ((EXAMPLE_LCD_H_RES > EXAMPLE_LCD_V_RES) ? EXAMPLE_LCD_H_RES : EXAMPLE_LCD_V_RES)
+// Calculate the gauge dimension based on screen resolution
+#define GAUGE_DIMENSION LCD_RES
 
-// Arc geometry
+// Arc geometry (angles are independent of scale)
 #define ARC_START_ANGLE  135
 #define ARC_END_ANGLE    405  // 135 + 270 degrees
 
-// Visual styling
-#define ARC_WIDTH        24
-#define LINE_WIDTH       4
+// Visual styling (scaled based on GAUGE_SCALE)
+#define ARC_WIDTH        ((int)(24 * GAUGE_SCALE))
+#define LINE_WIDTH       ((int)(4 * GAUGE_SCALE))
 #define ARC_SIZE         (GAUGE_DIMENSION - (LINE_WIDTH * 12))
+
+// Positioning offsets (scaled based on GAUGE_SCALE)
+#define MARKER_LABEL_OFFSET     ((int)(40 * GAUGE_SCALE))   // Distance from arc to marker labels
+#define TEMP_LABEL_Y_OFFSET     ((int)(-15 * GAUGE_SCALE))  // Y offset for main temperature label
+#define TEMP_UNIT_Y_OFFSET      ((int)(55 * GAUGE_SCALE))   // Y offset for unit label
+#define ICON_Y_OFFSET           ((int)(-10 * GAUGE_SCALE))  // Y offset for icon from bottom
 
 // ============================================================================
 // OIL TEMPERATURE GAUGE CONFIGURATION
