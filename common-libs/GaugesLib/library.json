@@ -1,0 +1,16 @@
+{
+  "name": "GaugesLib",
+  "version": "1.0.0",
+  "description": "Common library for gauges and fonts used across ESP32 display projects",
+  "keywords": ["gauges", "fonts", "display", "esp32"],
+  "authors": [
+    {
+      "name": "Mark Thebault"
+    }
+  ],
+  "repository": {
+    "type": "git"
+  },
+  "frameworks": ["arduino", "espidf"],
+  "platforms": ["espressif32"]
+}

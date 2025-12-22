@@ -1,11 +1,14 @@
 #define LGFX_USE_V1
+
 #include "Arduino.h"
 #include <lvgl.h>
 #include <LovyanGFX.hpp>
 #include <Ticker.h>
 #include "CST816D.h"
 
+#include "gauges/gauge_manager.h"
 
+// Hardware Pin Definitions
 #define I2C_SDA 4
 #define I2C_SCL 5
 #define TP_INT 0
@@ -14,11 +17,10 @@
 #define off_pin 35
 #define buf_size 100
 
+// LovyanGFX Configuration Class
 class LGFX : public lgfx::LGFX_Device
 {
-
   lgfx::Panel_GC9A01 _panel_instance;
- // lgfx::Light_PWM     _light_instance;
   lgfx::Bus_SPI _bus_instance;
 
 public:
@@ -27,70 +29,60 @@ public:
     {
       auto cfg = _bus_instance.config();
 
-      // SPIバスの設定
-      cfg.spi_host = SPI2_HOST; // 使用するSPIを選択  ESP32-S2,C3 : SPI2_HOST or SPI3_HOST / ESP32 : VSPI_HOST or HSPI_HOST
-      // ※ ESP-IDFバージョンアップに伴い、VSPI_HOST , HSPI_HOSTの記述は非推奨になるため、エラーが出る場合は代わりにSPI2_HOST , SPI3_HOSTを使用してください。
-      cfg.spi_mode = 0;                  // SPI通信モードを設定 (0 ~ 3)
-      cfg.freq_write = 80000000;         // 传输时的SPI时钟（最高80MHz，四舍五入为80MHz除以整数得到的值）
-      cfg.freq_read = 20000000;          // 接收时的SPI时钟
-      cfg.spi_3wire = true;              // 受信をMOSIピンで行う場合はtrueを設定
-      cfg.use_lock = true;               // 使用事务锁时设置为 true
-      cfg.dma_channel = SPI_DMA_CH_AUTO; // 使用するDMAチャンネルを設定 (0=DMA不使用 / 1=1ch / 2=ch / SPI_DMA_CH_AUTO=自動設定)
-      // ※ ESP-IDFバージョンアップに伴い、DMAチャンネルはSPI_DMA_CH_AUTO(自動設定)が推奨になりました。1ch,2chの指定は非推奨になります。
-      cfg.pin_sclk = 6;  // SPIのSCLKピン番号を設定
-      cfg.pin_mosi = 7;  // SPIのCLKピン番号を設定
-      cfg.pin_miso = -1; // SPIのMISOピン番号を設定 (-1 = disable)
-      cfg.pin_dc = 2;    // SPIのD/Cピン番号を設定  (-1 = disable)
+      // SPI Bus Settings
+      cfg.spi_host = SPI2_HOST;         // Select SPI (ESP32-S2/C3: SPI2_HOST or SPI3_HOST)
+      cfg.spi_mode = 0;                  // SPI Mode (0 ~ 3)
+      cfg.freq_write = 80000000;         // SPI Clock for writing (Max 80MHz)
+      cfg.freq_read = 20000000;          // SPI Clock for reading
+      cfg.spi_3wire = true;              // Set true if receiving via MOSI pin
+      cfg.use_lock = true;               // Set true to use transaction locks
+      cfg.dma_channel = SPI_DMA_CH_AUTO; // Set DMA channel (Auto recommended for latest ESP-IDF)
+      
+      cfg.pin_sclk = 6;                  // SPI SCLK pin
+      cfg.pin_mosi = 7;                  // SPI MOSI pin
+      cfg.pin_miso = -1;                 // SPI MISO pin (-1 to disable)
+      cfg.pin_dc = 2;                    // SPI D/C pin
 
-      _bus_instance.config(cfg);              // 設定値をバスに反映します。
-      _panel_instance.setBus(&_bus_instance); // バスをパネルにセットします。
+      _bus_instance.config(cfg);              // Apply bus settings
+      _panel_instance.setBus(&_bus_instance); // Connect bus to panel
     }
 
-    {                                      // 表示パネル制御の設定を行います。
-      auto cfg = _panel_instance.config(); // 表示パネル設定用の構造体を取得します。
+    {
+      auto cfg = _panel_instance.config(); // Get structure for display panel settings
 
-      cfg.pin_cs = 10;   // CSが接続されているピン番号   (-1 = disable)
-      cfg.pin_rst = -1;  // RSTが接続されているピン番号  (-1 = disable)
-      cfg.pin_busy = -1; // BUSYが接続されているピン番号 (-1 = disable)
+      cfg.pin_cs = 10;   // CS pin (-1 to disable)
+      cfg.pin_rst = -1;  // RST pin (-1 to disable)
+      cfg.pin_busy = -1; // BUSY pin (-1 to disable)
 
-      // ※ 以下の設定値はパネル毎に一般的な初期値が設定さ BUSYが接続されているピン番号 (-1 = disable)れていますので、不明な項目はコメントアウトして試してみてください。
-
-      cfg.memory_width = 240;   // ドライバICがサポートしている最大の幅
-      cfg.memory_height = 240;  // ドライバICがサポートしている最大の高さ
-      cfg.panel_width = 240;    // 実際に表示可能な幅
-      cfg.panel_height = 240;   // 実際に表示可能な高さ
-      cfg.offset_x = 0;         // パネルのX方向オフセット量
-      cfg.offset_y = 0;         // パネルのY方向オフセット量
-      cfg.offset_rotation = 0;  // 值在旋转方向的偏移0~7（4~7是倒置的） 
-      cfg.dummy_read_pixel = 8; // 在读取像素之前读取的虚拟位数
-      cfg.dummy_read_bits = 1;  // 读取像素以外的数据之前的虚拟读取位数
-      cfg.readable = false;     // 如果可以读取数据，则设置为 true
-      cfg.invert = true;        // 如果面板的明暗反转，则设置为 true
-      cfg.rgb_order = false;    // 如果面板的红色和蓝色被交换，则设置为 true
-      cfg.dlen_16bit = false;   // 对于以 16 位单位发送数据长度的面板，设置为 true
-      cfg.bus_shared = false;   // 如果总线与 SD 卡共享，则设置为 true（使用 drawJpgFile 等执行总线控制）
+      // Panel Dimensions and Offsets
+      cfg.memory_width = 240;   // Max width supported by Driver IC
+      cfg.memory_height = 240;  // Max height supported by Driver IC
+      cfg.panel_width = 240;    // Actual displayable width
+      cfg.panel_height = 240;   // Actual displayable height
+      cfg.offset_x = 0;         // X offset
+      cfg.offset_y = 0;         // Y offset
+      
+      cfg.offset_rotation = 0;  // Rotation offset 0~7
+      cfg.dummy_read_pixel = 8; // Dummy bits before reading pixels
+      cfg.dummy_read_bits = 1;  // Dummy bits before reading non-pixel data
+      cfg.readable = false;     // Set true if data can be read from the panel
+      cfg.invert = true;        // Set true if colors are inverted
+      cfg.rgb_order = false;    // Set true if Red and Blue are swapped
+      cfg.dlen_16bit = false;   // Set true for panels sending data in 16-bit units
+      cfg.bus_shared = false;   // Set true if SPI bus is shared (e.g., with SD card)
 
       _panel_instance.config(cfg);
     }
 
-    setPanel(&_panel_instance); // 使用するパネルをセットします。
-//    { // バックライト制御の設定を行います。(必要なければ削除）
-//    auto cfg = _light_instance.config();// バックライト設定用の構造体を取得します。
-//    cfg.pin_bl = 8;             // バックライトが接続されているピン番号 BL
-//    cfg.invert = false;          // バックライトの輝度を反転させる場合 true
-//    cfg.freq   = 44100;          // バックライトのPWM周波数
-//    cfg.pwm_channel = 7;         // 使用するPWMのチャンネル番号
-//    _light_instance.config(cfg);
-//    _panel_instance.setLight(&_light_instance);//バックライトをパネルにセットします。
-//    }
+    setPanel(&_panel_instance); // Register the panel
   }
 };
 
-// 準備したクラスのインスタンスを作成します。
+// Create instances
 LGFX tft;
 CST816D touch(I2C_SDA, I2C_SCL, TP_RST, TP_INT);
 
-/*更改为您的屏幕分辨率*/
+/* Screen Resolution Settings */
 static const uint32_t screenWidth = 240;
 static const uint32_t screenHeight = 240;
 
@@ -98,7 +90,7 @@ static lv_disp_draw_buf_t draw_buf;
 static lv_color_t buf[2][screenWidth * buf_size];
 
 #if LV_USE_LOG != 0
-/* Serial debugging */
+/* Serial debugging for LVGL */
 void my_print(lv_log_level_t level, const char *file, uint32_t line, const char *fn_name, const char *dsc)
 {
   Serial.printf("%s(%s)@%d->%s\r\n", file, fn_name, line, dsc);
@@ -106,7 +98,7 @@ void my_print(lv_log_level_t level, const char *file, uint32_t line, const char 
 }
 #endif
 
-/* Display flushing */
+/* Display flushing: Interface between LVGL and the graphics library */
 void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p)
 {
   if (tft.getStartCount() == 0)
@@ -114,15 +106,15 @@ void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color
     tft.endWrite();
   }
 
+  // Use DMA for faster image pushing
   tft.pushImageDMA(area->x1, area->y1, area->x2 - area->x1 + 1, area->y2 - area->y1 + 1, (lgfx::swap565_t *)&color_p->full);
 
-  lv_disp_flush_ready(disp); /* tell lvgl that flushing is done */
+  lv_disp_flush_ready(disp); /* Signal LVGL that flushing is finished */
 }
 
-/*Read the touchpad*/
+/* Touchpad reading: Interface between LVGL and the touch driver */
 void my_touchpad_read(lv_indev_drv_t *indev_driver, lv_indev_data_t *data)
 {
-
   bool touched;
   uint8_t gesture;
   uint16_t touchX, touchY;
@@ -136,8 +128,6 @@ void my_touchpad_read(lv_indev_drv_t *indev_driver, lv_indev_data_t *data)
   else
   {
     data->state = LV_INDEV_STATE_PR;
-
-    /*Set the coordinates*/
     data->point.x = touchX;
     data->point.y = touchY;
   }
@@ -145,6 +135,7 @@ void my_touchpad_read(lv_indev_drv_t *indev_driver, lv_indev_data_t *data)
 
 Ticker ticker;
 
+// Periodic function to check memory usage
 void tcr1s()
 {
   Serial.printf("SRAM free size: %d\n", heap_caps_get_free_size(MALLOC_CAP_INTERNAL));
@@ -154,12 +145,12 @@ void setup()
 {
   pinMode(3, OUTPUT);
   digitalWrite(3, HIGH);
-  Serial.begin(115200); /* prepare for possible serial debug */
+  
+  Serial.begin(115200); 
   Serial.println("I am LVGL_Arduino");
 
-  ticker.attach(1, tcr1s);
-//  tft.setBrightness(200);
-//  tft.setSwapBytes(true);
+  ticker.attach(1, tcr1s); // Print memory status every 1 second
+
   tft.init();
   tft.initDMA();
   tft.startWrite();
@@ -168,39 +159,66 @@ void setup()
   lv_init();
 
 #if LV_USE_LOG != 0
-  lv_log_register_print_cb(my_print); /* register print function for debugging */
+  lv_log_register_print_cb(my_print); /* Register debug function */
 #endif
 
   lv_disp_draw_buf_init(&draw_buf, buf[0], buf[1], screenWidth * buf_size);
 
-  /*Initialize the display*/
+  /* Initialize the display driver for LVGL */
   static lv_disp_drv_t disp_drv;
   lv_disp_drv_init(&disp_drv);
-  /*Change the following line to your display resolution*/
   disp_drv.hor_res = screenWidth;
   disp_drv.ver_res = screenHeight;
   disp_drv.flush_cb = my_disp_flush;
   disp_drv.draw_buf = &draw_buf;
   lv_disp_drv_register(&disp_drv);
 
-  /*Initialize the (dummy) input device driver*/
+  /* Initialize the touch input device driver */
   static lv_indev_drv_t indev_drv;
   lv_indev_drv_init(&indev_drv);
   indev_drv.type = LV_INDEV_TYPE_POINTER;
   indev_drv.read_cb = my_touchpad_read;
   lv_indev_drv_register(&indev_drv);
 
-  /* Create simple label */
-  lv_obj_t *label = lv_label_create( lv_scr_act() );
-  lv_label_set_text( label, "Hello Arduino! (V8.0.X)" );
-  lv_obj_align( label, LV_ALIGN_CENTER, 0, 0 );
-
+  // Initialize your custom gauge manager
+  gauge_manager_init();
   
   Serial.println("Setup done");
 }
 
+// Logic for simulating oil temperature fluctuations
+void update_gauge_animations() {
+  const unsigned long period = 12000UL;
+  unsigned long t = millis() % period;
+
+  int32_t oil_temp;
+  int32_t water_temp;
+
+  // 1. Calculate common Sweep Up logic (0ms to 9000ms)
+  if (t < 9000UL) {
+    // Both sweep from 60 to 160
+    int32_t rise_val = 60 + (int32_t)((100UL * t) / 9000UL);
+    oil_temp = rise_val;
+    water_temp = rise_val;
+  } 
+  // 2. Calculate Sweep Down logic (9000ms to 12000ms)
+  else {
+    unsigned long t2 = t - 9000UL;
+    // Oil sweeps down from 160 to 60
+    oil_temp = 160 - (int32_t)((100UL * t2) / 3000UL);
+    // Water sweeps down from 140 to 40 (based on your 140 starting point)
+    water_temp = 140 - (int32_t)((100UL * t2) / 3000UL);
+  }
+
+  // 3. Update both values in the manager simultaneously
+  gauge_manager_update(oil_temp, water_temp);
+}
+
 void loop()
 {
-  lv_timer_handler(); /* let the GUI do its work */
-  delay(5);
+  lv_timer_handler(); /* Process LVGL timers and GUI updates */
+
+  update_gauge_animations(); // Update gauge values
+  
+  delay(30); // Small delay to prevent hogging CPU
 }

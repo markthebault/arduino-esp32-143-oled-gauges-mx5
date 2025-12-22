@@ -3,6 +3,7 @@ extern "C" {
 #endif
 
 #include "gauge_manager.h"
+#include "gauges_config.h"
 #include "oil_temp_gauge.h"
 #include "water_temp_gauge.h"
 
@@ -10,7 +11,7 @@ extern "C" {
 // PRIVATE STATE
 // ============================================================================
 
-static gauge_type_t current_gauge = GAUGE_OIL_TEMP;
+static gauge_type_t current_gauge = DEFAULT_GAUGE;
 static lv_obj_t *gauge_screens[GAUGE_COUNT] = {NULL};
 
 // ============================================================================
@@ -30,9 +31,9 @@ void gauge_manager_init(void) {
     lv_scr_load(gauge_screens[GAUGE_WATER_TEMP]);
     water_temp_gauge_init();
 
-    // Load the first gauge (oil temp)
-    lv_scr_load(gauge_screens[GAUGE_OIL_TEMP]);
-    current_gauge = GAUGE_OIL_TEMP;
+    // Load the default gauge (configured via DEFAULT_GAUGE build flag)
+    lv_scr_load(gauge_screens[DEFAULT_GAUGE]);
+    current_gauge = DEFAULT_GAUGE;
 }
 
 void gauge_manager_next(void) {

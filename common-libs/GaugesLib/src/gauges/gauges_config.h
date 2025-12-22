@@ -118,6 +118,17 @@ extern "C" {
 #define WATER_TEMP_MARKER_INTERVAL  10   // Markers every 10 degrees
 
 // ============================================================================
+// DEFAULT GAUGE SELECTION
+// ============================================================================
+
+// Define which gauge to show on startup
+// 0 = Oil Temperature Gauge
+// 1 = Water Temperature Gauge
+#ifndef DEFAULT_GAUGE
+    #define DEFAULT_GAUGE 0  // Default to oil temp gauge
+#endif
+
+// ============================================================================
 // ANIMATION CONFIGURATION
 // ============================================================================
 
