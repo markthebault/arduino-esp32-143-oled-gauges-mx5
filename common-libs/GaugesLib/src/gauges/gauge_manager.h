@@ -50,6 +50,18 @@ gauge_type_t gauge_manager_get_current(void);
  */
 void gauge_manager_update(float oilTemp, float waterTemp);
 
+/**
+ * @brief Update gauges with animated test values
+ *
+ * For testing purposes. Animates both oil and water temperature gauges
+ * through their full ranges in a continuous cycle:
+ * - 0-9 seconds: Sweep up (oil: 60->160, water: 60->140)
+ * - 9-12 seconds: Sweep down back to starting values
+ *
+ * Call this function repeatedly in your loop() for testing.
+ */
+void gauge_manager_update_test_animation(void);
+
 #ifdef __cplusplus
 }
 #endif

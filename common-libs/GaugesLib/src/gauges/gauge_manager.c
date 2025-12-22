@@ -7,6 +7,14 @@ extern "C" {
 #include "oil_temp_gauge.h"
 #include "water_temp_gauge.h"
 
+// For millis() function
+#ifdef ARDUINO
+#include "Arduino.h"
+#else
+// For non-Arduino platforms, provide a fallback
+extern unsigned long millis(void);
+#endif
+
 // ============================================================================
 // PRIVATE STATE
 // ============================================================================
@@ -62,6 +70,38 @@ void gauge_manager_update(float oilTemp, float waterTemp) {
         default:
             break;
     }
+}
+
+void gauge_manager_update_test_animation(void) {
+    const unsigned long period = 12000UL;
+    unsigned long t = millis() % period;
+
+    int32_t oil_temp;
+    int32_t water_temp;
+
+    if (t < 9000UL) {
+        // --- Sweep Up (0 to 9 seconds) ---
+
+        // Oil: 60 -> 160 (Range of 100)
+        oil_temp = 60 + (int32_t)((100UL * t) / 9000UL);
+
+        // Water: 60 -> 140 (Range of 80)
+        // We use 80UL here so it hits exactly 140 at the 9-second mark
+        water_temp = 60 + (int32_t)((80UL * t) / 9000UL);
+    }
+    else {
+        // --- Sweep Down (9 to 12 seconds) ---
+        unsigned long t2 = t - 9000UL;
+
+        // Oil: 160 -> 60
+        oil_temp = 160 - (int32_t)((100UL * t2) / 3000UL);
+
+        // Water: 140 -> 60 (Range of 80)
+        // Subtracted from 140 so the animation is fluid
+        water_temp = 140 - (int32_t)((80UL * t2) / 3000UL);
+    }
+
+    gauge_manager_update(oil_temp, water_temp);
 }
 
 #ifdef __cplusplus

@@ -186,39 +186,11 @@ void setup()
   Serial.println("Setup done");
 }
 
-// Logic for simulating oil temperature fluctuations
-void update_gauge_animations() {
-  const unsigned long period = 12000UL;
-  unsigned long t = millis() % period;
-
-  int32_t oil_temp;
-  int32_t water_temp;
-
-  // 1. Calculate common Sweep Up logic (0ms to 9000ms)
-  if (t < 9000UL) {
-    // Both sweep from 60 to 160
-    int32_t rise_val = 60 + (int32_t)((100UL * t) / 9000UL);
-    oil_temp = rise_val;
-    water_temp = rise_val;
-  } 
-  // 2. Calculate Sweep Down logic (9000ms to 12000ms)
-  else {
-    unsigned long t2 = t - 9000UL;
-    // Oil sweeps down from 160 to 60
-    oil_temp = 160 - (int32_t)((100UL * t2) / 3000UL);
-    // Water sweeps down from 140 to 40 (based on your 140 starting point)
-    water_temp = 140 - (int32_t)((100UL * t2) / 3000UL);
-  }
-
-  // 3. Update both values in the manager simultaneously
-  gauge_manager_update(oil_temp, water_temp);
-}
-
 void loop()
 {
   lv_timer_handler(); /* Process LVGL timers and GUI updates */
 
-  update_gauge_animations(); // Update gauge values
+  gauge_manager_update_test_animation(); // Update gauge values with test animation
   
   delay(30); // Small delay to prevent hogging CPU
 }

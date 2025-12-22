@@ -11,8 +11,6 @@
 static unsigned long last_tap_time = 0;
 static bool waiting_for_second_tap = false;
 
-void set_oil_temp_animation();
-
 void setup() {
   Serial.begin(115200);
   delay(2000); // Give serial time to start
@@ -77,9 +75,7 @@ void loop() {
 
   // This is for testing the oil temp gauge animation when ESP-NOW is not used
   if (example_lvgl_lock(-1)) {
-    // set_oil_temp_animation();
-    gauge_manager_update(120, 80); //TODO: Use oil temp to test
-
+    gauge_manager_update_test_animation();
     example_lvgl_unlock();
   }
 
@@ -90,24 +86,3 @@ void loop() {
 
   delay(30);
 }
-
-/////////////// Test animation function when espnow is not used ///////////////
-void set_oil_temp_animation() {
-  const unsigned long period = 12000UL;
-  unsigned long t = millis() % period;
-
-  int32_t temp_val;
-
-  if (t < 9000UL) {
-    // Sweep Up (60 to 160)
-    temp_val = 60 + (int32_t)((100UL * t) / 9000UL);
-  } else {
-    // Sweep Down (160 to 60)
-    unsigned long t2 = t - 9000UL;
-    temp_val = 160 - (int32_t)((100UL * t2) / 3000UL);
-  }
-
-  // Update oil temperature gauge
-  gauge_manager_update(temp_val, 0);
-}
-/////////////////////////////////////////////////////
