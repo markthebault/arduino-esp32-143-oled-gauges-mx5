@@ -16,6 +16,7 @@ void set_oil_temp_animation();
 void setup() {
   Serial.begin(115200);
   delay(2000); // Give serial time to start
+  Serial.println("Starting ESP32 OLED Gauges...");
 
   // 1. Initialize Display & LVGL
   Touch_Init();
@@ -77,7 +78,7 @@ void loop() {
   // This is for testing the oil temp gauge animation when ESP-NOW is not used
   if (example_lvgl_lock(-1)) {
     // set_oil_temp_animation();
-    gauge_manager_update(123, 80); //TODO: Use oil temp to test
+    gauge_manager_update(120, 80); //TODO: Use oil temp to test
 
     example_lvgl_unlock();
   }
