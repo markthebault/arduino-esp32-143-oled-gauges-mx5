@@ -115,7 +115,7 @@ extern "C" {
 #define WATER_TEMP_ZONE_RED         110
 #define WATER_TEMP_REDLINE          110
 #define WATER_TEMP_ALERT_THRESHOLD  115
-#define WATER_TEMP_MARKER_INTERVAL  10   // Markers every 10 degrees
+#define WATER_TEMP_MARKER_INTERVAL  20   // Markers every 20 degrees
 
 // ============================================================================
 // DEFAULT GAUGE SELECTION
