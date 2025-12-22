@@ -1,7 +1,7 @@
-#include "src/display/lcd_bsp.h"
-#include "src/touch/FT3168.h"
-#include "src/gauges/gauge_manager.h"
-#include "src/communication/esp_now_receiver.h"
+#include "./display/lcd_bsp.h"
+#include "./touch/FT3168.h"
+#include "./gauges/gauge_manager.h"
+#include "./communication/esp_now_receiver.h"
 
 // Double-tap detection constants
 #define DOUBLE_TAP_INTERVAL_MS 500  // Maximum time between taps
@@ -11,9 +11,12 @@
 static unsigned long last_tap_time = 0;
 static bool waiting_for_second_tap = false;
 
+void set_oil_temp_animation();
+
 void setup() {
   Serial.begin(115200);
   delay(2000); // Give serial time to start
+  Serial.println("Starting ESP32 OLED Gauges...");
 
   // 1. Initialize Display & LVGL
   Touch_Init();
@@ -65,11 +68,19 @@ void loop() {
   }
 
   // Update the current gauge if we have received data
-  if (dataReceived) {
-    if (example_lvgl_lock(-1)) {
-      gauge_manager_update(latestData.oilTemp, latestData.oilTemp); //TODO: Use oil temp to test
-      example_lvgl_unlock();
-    }
+  // if (dataReceived) {
+  //   if (example_lvgl_lock(-1)) {
+  //     // gauge_manager_update(latestData.oilTemp, latestData.oilTemp); //TODO: Use oil temp to test
+  //     example_lvgl_unlock();
+  //   }
+  // }
+
+  // This is for testing the oil temp gauge animation when ESP-NOW is not used
+  if (example_lvgl_lock(-1)) {
+    // set_oil_temp_animation();
+    gauge_manager_update(120, 80); //TODO: Use oil temp to test
+
+    example_lvgl_unlock();
   }
 
     // if (example_lvgl_lock(-1)) {
@@ -81,22 +92,22 @@ void loop() {
 }
 
 /////////////// Test animation function when espnow is not used ///////////////
-// void set_oil_temp_animation() {
-//   const unsigned long period = 12000UL;
-//   unsigned long t = millis() % period;
+void set_oil_temp_animation() {
+  const unsigned long period = 12000UL;
+  unsigned long t = millis() % period;
 
-//   int32_t temp_val;
+  int32_t temp_val;
 
-//   if (t < 9000UL) {
-//     // Sweep Up (60 to 160)
-//     temp_val = 60 + (int32_t)((100UL * t) / 9000UL);
-//   } else {
-//     // Sweep Down (160 to 60)
-//     unsigned long t2 = t - 9000UL;
-//     temp_val = 160 - (int32_t)((100UL * t2) / 3000UL);
-//   }
+  if (t < 9000UL) {
+    // Sweep Up (60 to 160)
+    temp_val = 60 + (int32_t)((100UL * t) / 9000UL);
+  } else {
+    // Sweep Down (160 to 60)
+    unsigned long t2 = t - 9000UL;
+    temp_val = 160 - (int32_t)((100UL * t2) / 3000UL);
+  }
 
-//   // Update oil temperature gauge
-//   gauge_manager_update(temp_val, 0);
-// }
+  // Update oil temperature gauge
+  gauge_manager_update(temp_val, 0);
+}
 /////////////////////////////////////////////////////

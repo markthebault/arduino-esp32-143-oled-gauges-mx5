@@ -83,7 +83,7 @@ void lcd_lvgl_Init(void)
   ESP_ERROR_CHECK_WITHOUT_ABORT(esp_lcd_panel_disp_on_off(panel_handle, true));
 
   lv_init();
-  lv_color_t *buf1 = heap_caps_malloc(EXAMPLE_LCD_H_RES * EXAMPLE_LVGL_BUF_HEIGHT * sizeof(lv_color_t), MALLOC_CAP_DMA);
+  lv_color_t *buf1 = (lv_color_t *)heap_caps_malloc(EXAMPLE_LCD_H_RES * EXAMPLE_LVGL_BUF_HEIGHT * sizeof(lv_color_t), MALLOC_CAP_DMA);
   assert(buf1);
   // Use single buffering to save DMA memory (buf2 = NULL)
   lv_disp_draw_buf_init(&disp_buf, buf1, NULL, EXAMPLE_LCD_H_RES * EXAMPLE_LVGL_BUF_HEIGHT);
@@ -94,8 +94,13 @@ void lcd_lvgl_Init(void)
   disp_drv.rounder_cb = example_lvgl_rounder_cb;
   disp_drv.draw_buf = &disp_buf;
   disp_drv.user_data = panel_handle;
+
+  // NOT WORKING to work that requires the following modification to the lvgl library:
+//   diff ./lib/lvgl/src/core/lv_refr.c ./tmp/lvgl/src/core/lv_refr.c
+// 1211a1212
+// >             height &= ~0x1UL;
 #ifdef EXAMPLE_Rotate_90
-  disp_drv.sw_rotate = 1;
+  disp_drv.sw_rotate = 0;
   disp_drv.rotated = LV_DISP_ROT_270;
 #endif
   lv_disp_t *disp = lv_disp_drv_register(&disp_drv);
@@ -169,27 +174,28 @@ static bool example_notify_lvgl_flush_ready(esp_lcd_panel_io_handle_t panel_io, 
 static void example_lvgl_flush_cb(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_map)
 {
   esp_lcd_panel_handle_t panel_handle = (esp_lcd_panel_handle_t) drv->user_data;
+  
+  // Calculate offsets
   const int offsetx1 = (READ_LCD_ID == SH8601_ID) ? area->x1 : area->x1 + 0x06;
   const int offsetx2 = (READ_LCD_ID == SH8601_ID) ? area->x2 : area->x2 + 0x06;
   const int offsety1 = area->y1;
   const int offsety2 = area->y2;
 
+  // The draw_bitmap function takes (x_start, y_start, x_end, y_end)
+  // With the rounder above, (offsetx2 + 1) - offsetx1 will always be an even number.
   esp_lcd_panel_draw_bitmap(panel_handle, offsetx1, offsety1, offsetx2 + 1, offsety2 + 1, color_map);
 }
 void example_lvgl_rounder_cb(struct _lv_disp_drv_t *disp_drv, lv_area_t *area)
 {
-  uint16_t x1 = area->x1;
-  uint16_t x2 = area->x2;
+  // Round X1 down to even, X2 up to odd (Width is even)
+  area->x1 &= ~0x1;
+  area->x2 |= 0x1;
 
-  uint16_t y1 = area->y1;
-  uint16_t y2 = area->y2;
-
-  // round the start of coordinate down to the nearest 2M number
-  area->x1 = (x1 >> 1) << 1;
-  area->y1 = (y1 >> 1) << 1;
-  // round the end of coordinate up to the nearest 2N+1 number
-  area->x2 = ((x2 >> 1) << 1) + 1;
-  area->y2 = ((y2 >> 1) << 1) + 1;
+  // Round Y1 down to even, Y2 up to odd (Height is even)
+  // This mimics the 'height &= ~0x1UL' fix by ensuring the 
+  // total number of lines (y2 - y1 + 1) is always even.
+  area->y1 &= ~0x1;
+  area->y2 |= 0x1;
 }
 static void example_lvgl_touch_cb(lv_indev_drv_t *drv, lv_indev_data_t *data)
 {
