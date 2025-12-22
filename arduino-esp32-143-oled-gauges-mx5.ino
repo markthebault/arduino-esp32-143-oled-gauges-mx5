@@ -72,6 +72,11 @@ void loop() {
     }
   }
 
+    // if (example_lvgl_lock(-1)) {
+    //   gauge_manager_update(120, 80); //TODO: Use oil temp to test
+    //   example_lvgl_unlock();
+    // }
+
   delay(30);
 }
 
