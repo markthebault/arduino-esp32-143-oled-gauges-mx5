@@ -58,13 +58,16 @@ esp_err_t esp_lcd_new_panel_sh8601(const esp_lcd_panel_io_handle_t io, const esp
 
     esp_err_t ret = ESP_OK;
     sh8601_panel_t *sh8601 = NULL;
-    sh8601 = calloc(1, sizeof(sh8601_panel_t));
+    uint8_t fb_bits_per_pixel = 0;
+    sh8601_vendor_config_t *vendor_config = NULL;
+
+    sh8601 = (sh8601_panel_t *)calloc(1, sizeof(sh8601_panel_t));
     ESP_GOTO_ON_FALSE(sh8601, ESP_ERR_NO_MEM, err, TAG, "no mem for sh8601 panel");
 
     if (panel_dev_config->reset_gpio_num >= 0) {
         gpio_config_t io_conf = {
-            .mode = GPIO_MODE_OUTPUT,
             .pin_bit_mask = 1ULL << panel_dev_config->reset_gpio_num,
+            .mode = GPIO_MODE_OUTPUT,
         };
         ESP_GOTO_ON_ERROR(gpio_config(&io_conf), err, TAG, "configure GPIO for RST line failed");
     }
@@ -81,7 +84,6 @@ esp_err_t esp_lcd_new_panel_sh8601(const esp_lcd_panel_io_handle_t io, const esp
         break;
     }
 
-    uint8_t fb_bits_per_pixel = 0;
     switch (panel_dev_config->bits_per_pixel) {
     case 16: // RGB565
         sh8601->colmod_val = 0x55;
@@ -104,7 +106,7 @@ esp_err_t esp_lcd_new_panel_sh8601(const esp_lcd_panel_io_handle_t io, const esp
     sh8601->io = io;
     sh8601->reset_gpio_num = panel_dev_config->reset_gpio_num;
     sh8601->fb_bits_per_pixel = fb_bits_per_pixel;
-    sh8601_vendor_config_t *vendor_config = (sh8601_vendor_config_t *)panel_dev_config->vendor_config;
+    vendor_config = (sh8601_vendor_config_t *)panel_dev_config->vendor_config;
     if (vendor_config) {
         sh8601->init_cmds = vendor_config->init_cmds;
         sh8601->init_cmds_size = vendor_config->init_cmds_size;
@@ -131,7 +133,7 @@ esp_err_t esp_lcd_new_panel_sh8601(const esp_lcd_panel_io_handle_t io, const esp
 err:
     if (sh8601) {
         if (panel_dev_config->reset_gpio_num >= 0) {
-            gpio_reset_pin(panel_dev_config->reset_gpio_num);
+            gpio_reset_pin((gpio_num_t)panel_dev_config->reset_gpio_num);
         }
         free(sh8601);
     }
@@ -163,7 +165,7 @@ static esp_err_t panel_sh8601_del(esp_lcd_panel_t *panel)
     sh8601_panel_t *sh8601 = __containerof(panel, sh8601_panel_t, base);
 
     if (sh8601->reset_gpio_num >= 0) {
-        gpio_reset_pin(sh8601->reset_gpio_num);
+        gpio_reset_pin((gpio_num_t)sh8601->reset_gpio_num);
     }
     ESP_LOGD(TAG, "del sh8601 panel @%p", sh8601);
     free(sh8601);
@@ -177,9 +179,9 @@ static esp_err_t panel_sh8601_reset(esp_lcd_panel_t *panel)
 
     // Perform hardware reset
     if (sh8601->reset_gpio_num >= 0) {
-        gpio_set_level(sh8601->reset_gpio_num, sh8601->flags.reset_level);
+        gpio_set_level((gpio_num_t)sh8601->reset_gpio_num, sh8601->flags.reset_level);
         vTaskDelay(pdMS_TO_TICKS(10));
-        gpio_set_level(sh8601->reset_gpio_num, !sh8601->flags.reset_level);
+        gpio_set_level((gpio_num_t)sh8601->reset_gpio_num, !sh8601->flags.reset_level);
         vTaskDelay(pdMS_TO_TICKS(150));
     } else { // Perform software reset
         ESP_RETURN_ON_ERROR(tx_param(sh8601, io, LCD_CMD_SWRESET, NULL, 0), TAG, "send command failed");
