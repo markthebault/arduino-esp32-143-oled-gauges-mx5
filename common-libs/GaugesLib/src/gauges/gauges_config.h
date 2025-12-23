@@ -118,12 +118,36 @@ extern "C" {
 #define WATER_TEMP_MARKER_INTERVAL  20   // Markers every 20 degrees
 
 // ============================================================================
+// OIL PRESSURE GAUGE CONFIGURATION
+// ============================================================================
+
+#define OIL_PRESSURE_MIN              0
+#define OIL_PRESSURE_MAX              10
+#define OIL_PRESSURE_ZONE_GREEN       2
+#define OIL_PRESSURE_ZONE_ORANGE      7
+#define OIL_PRESSURE_ZONE_RED         8
+#define OIL_PRESSURE_REDLINE          8
+#define OIL_PRESSURE_ALERT_LOW        1     // Alert when pressure too low
+#define OIL_PRESSURE_ALERT_HIGH       9     // Alert when pressure too high
+
+// ============================================================================
+// MULTI GAUGE BAR CONFIGURATION
+// ============================================================================
+
+#define MULTI_GAUGE_BAR_WIDTH       ((int)(200 * GAUGE_SCALE))
+#define MULTI_GAUGE_BAR_HEIGHT      ((int)(40 * GAUGE_SCALE))
+#define MULTI_GAUGE_ROW_SPACING     ((int)(85 * GAUGE_SCALE))
+#define MULTI_GAUGE_ICON_SIZE       ((int)(48 * GAUGE_SCALE))
+#define MULTI_GAUGE_VALUE_WIDTH     ((int)(110 * GAUGE_SCALE))
+
+// ============================================================================
 // DEFAULT GAUGE SELECTION
 // ============================================================================
 
 // Define which gauge to show on startup
 // 0 = Oil Temperature Gauge
 // 1 = Water Temperature Gauge
+// 2 = Multi Gauge (shows all three: water temp, oil temp, oil pressure)
 #ifndef DEFAULT_GAUGE
     #define DEFAULT_GAUGE 0  // Default to oil temp gauge
 #endif

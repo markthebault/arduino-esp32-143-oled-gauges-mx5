@@ -6,6 +6,7 @@ extern "C" {
 #include "gauges_config.h"
 #include "oil_temp_gauge.h"
 #include "water_temp_gauge.h"
+#include "multi_gauge.h"
 
 // For millis() function
 #ifdef ARDUINO
@@ -39,6 +40,12 @@ void gauge_manager_init(void) {
     lv_scr_load(gauge_screens[GAUGE_WATER_TEMP]);
     water_temp_gauge_init();
 
+    // Create screen for multi gauge
+    gauge_screens[GAUGE_MULTI] = lv_obj_create(NULL);
+    lv_obj_set_style_bg_color(gauge_screens[GAUGE_MULTI], lv_color_hex(0x000000), 0);
+    lv_scr_load(gauge_screens[GAUGE_MULTI]);
+    multi_gauge_init();
+
     // Load the default gauge (configured via DEFAULT_GAUGE build flag)
     lv_scr_load(gauge_screens[DEFAULT_GAUGE]);
     current_gauge = DEFAULT_GAUGE;
@@ -58,7 +65,7 @@ gauge_type_t gauge_manager_get_current(void) {
     return current_gauge;
 }
 
-void gauge_manager_update(float oilTemp, float waterTemp) {
+void gauge_manager_update(float oilTemp, float waterTemp, float oilPressure) {
     // Update the appropriate gauge based on which one is currently visible
     switch (current_gauge) {
         case GAUGE_OIL_TEMP:
@@ -66,6 +73,9 @@ void gauge_manager_update(float oilTemp, float waterTemp) {
             break;
         case GAUGE_WATER_TEMP:
             water_temp_gauge_set_value((int32_t)waterTemp);
+            break;
+        case GAUGE_MULTI:
+            multi_gauge_set_values((int32_t)waterTemp, (int32_t)oilTemp, oilPressure);
             break;
         default:
             break;
@@ -78,6 +88,7 @@ void gauge_manager_update_test_animation(void) {
 
     int32_t oil_temp;
     int32_t water_temp;
+    float oil_pressure;
 
     if (t < 9000UL) {
         // --- Sweep Up (0 to 9 seconds) ---
@@ -88,6 +99,9 @@ void gauge_manager_update_test_animation(void) {
         // Water: 60 -> 140 (Range of 80)
         // We use 80UL here so it hits exactly 140 at the 9-second mark
         water_temp = 60 + (int32_t)((80UL * t) / 9000UL);
+
+        // Oil Pressure: 0 -> 8 bar (Range of 8)
+        oil_pressure = (float)((80UL * t) / 9000UL) / 10.0f;
     }
     else {
         // --- Sweep Down (9 to 12 seconds) ---
@@ -99,9 +113,12 @@ void gauge_manager_update_test_animation(void) {
         // Water: 140 -> 60 (Range of 80)
         // Subtracted from 140 so the animation is fluid
         water_temp = 140 - (int32_t)((80UL * t2) / 3000UL);
+
+        // Oil Pressure: 8 -> 0 bar
+        oil_pressure = 8.0f - (float)((80UL * t2) / 3000UL) / 10.0f;
     }
 
-    gauge_manager_update(oil_temp, water_temp);
+    gauge_manager_update(oil_temp, water_temp, oil_pressure);
 }
 
 #ifdef __cplusplus

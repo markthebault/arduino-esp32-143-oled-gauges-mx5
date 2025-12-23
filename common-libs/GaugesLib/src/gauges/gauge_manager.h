@@ -14,6 +14,7 @@ extern "C" {
 typedef enum {
     GAUGE_OIL_TEMP = 0,
     GAUGE_WATER_TEMP = 1,
+    GAUGE_MULTI = 2,
     GAUGE_COUNT  // Total number of gauges
 } gauge_type_t;
 
@@ -45,10 +46,11 @@ gauge_type_t gauge_manager_get_current(void);
  *
  * @param oilTemp Oil temperature value
  * @param waterTemp Water temperature value
+ * @param oilPressure Oil pressure value in bar
  *
  * Updates only the currently visible gauge based on the type.
  */
-void gauge_manager_update(float oilTemp, float waterTemp);
+void gauge_manager_update(float oilTemp, float waterTemp, float oilPressure);
 
 /**
  * @brief Update gauges with animated test values
