@@ -156,6 +156,7 @@ extern "C" {
 // 0 = Oil Temperature Gauge
 // 1 = Water Temperature Gauge
 // 2 = Multi Gauge (shows all three: water temp, oil temp, oil pressure)
+// 3 = Oil Pressure Gauge
 #ifndef DEFAULT_GAUGE
     #define DEFAULT_GAUGE 0  // Default to oil temp gauge
 #endif

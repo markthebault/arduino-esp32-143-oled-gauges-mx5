@@ -7,6 +7,7 @@ extern "C" {
 #include "oil_temp_gauge.h"
 #include "water_temp_gauge.h"
 #include "multi_gauge.h"
+#include "oil_pressure_gauge.h"
 
 // For millis() function
 #ifdef ARDUINO
@@ -46,6 +47,12 @@ void gauge_manager_init(void) {
     lv_scr_load(gauge_screens[GAUGE_MULTI]);
     multi_gauge_init();
 
+    // Create screen for oil pressure gauge
+    gauge_screens[GAUGE_OIL_PRESSURE] = lv_obj_create(NULL);
+    lv_obj_set_style_bg_color(gauge_screens[GAUGE_OIL_PRESSURE], lv_color_hex(0x000000), 0);
+    lv_scr_load(gauge_screens[GAUGE_OIL_PRESSURE]);
+    oil_pressure_gauge_init();
+
     // Load the default gauge (configured via DEFAULT_GAUGE build flag)
     lv_scr_load(gauge_screens[DEFAULT_GAUGE]);
     current_gauge = DEFAULT_GAUGE;
@@ -76,6 +83,9 @@ void gauge_manager_update(float oilTemp, float waterTemp, float oilPressure, int
             break;
         case GAUGE_MULTI:
             multi_gauge_set_values((int32_t)waterTemp, (int32_t)oilTemp, oilPressure, rpm);
+            break;
+        case GAUGE_OIL_PRESSURE:
+            oil_pressure_gauge_set_value(oilPressure, rpm);
             break;
         default:
             break;

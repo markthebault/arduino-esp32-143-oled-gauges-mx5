@@ -15,6 +15,7 @@ typedef enum {
     GAUGE_OIL_TEMP = 0,
     GAUGE_WATER_TEMP = 1,
     GAUGE_MULTI = 2,
+    GAUGE_OIL_PRESSURE = 3,
     GAUGE_COUNT  // Total number of gauges
 } gauge_type_t;
 
