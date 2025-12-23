@@ -26,9 +26,9 @@ extern "C" {
     #define GAUGE_SCALE 1.0f
     // Fonts for 466px display (using custom fonts)
     // Custom font declarations (defined in gauge_common.c)
-    extern const lv_font_t montserrat_bold_number_120;
+    extern const lv_font_t montserrat_bold_numbers_120;
     extern const lv_font_t fa_icons_54;
-    #define FONT_TEMP_MAIN   &montserrat_bold_number_120  // Main temperature number (120px)
+    #define FONT_TEMP_MAIN   &montserrat_bold_numbers_120  // Main temperature number (120px)
     #define FONT_TEMP_UNIT   &lv_font_montserrat_48       // °C unit (48px)
     #define FONT_MARKERS     &lv_font_montserrat_24       // Gauge markers (24px)
     #define FONT_ICON        &fa_icons_54                 // Bottom icon (54px)
@@ -42,12 +42,13 @@ extern "C" {
     #define GAUGE_SCALE 0.515f  // 240/466 ≈ 0.515
     // Fonts for 240px display (using LVGL built-in fonts)
     // Note: For optimal display, consider generating custom fonts at scaled sizes
+    extern const lv_font_t fa_icons_32;
     #define FONT_TEMP_MAIN   &lv_font_montserrat_48     // Main temperature number (scaled from 120px)
     #define FONT_TEMP_UNIT   &lv_font_montserrat_24     // °C unit (scaled from 48px)
     #define FONT_MARKERS     &lv_font_montserrat_14     // Gauge markers (scaled from 24px)
-    #define FONT_ICON        &lv_font_montserrat_32     // Bottom icon (scaled from 54px)
+    #define FONT_ICON        &fa_icons_32            // Bottom icon (scaled from 54px)
     #define USE_CUSTOM_TEMP_FONT 0
-    #define USE_CUSTOM_ICON_FONT 0
+    #define USE_CUSTOM_ICON_FONT 1
 #endif
 
 // ============================================================================
@@ -66,9 +67,10 @@ extern "C" {
 // ============================================================================
 
 // Icon symbols (used when USE_CUSTOM_ICON_FONT is enabled)
-#define FUEL_SYMBOL   "\xEF\x94\xAF"  // U+F52F
-#define OIL_SYMBOL    "\xEF\x98\x93"  // U+F613 - Droplet
-#define WATER_SYMBOL  "\xEF\x8B\x89"  // U+F2C9 - Thermometer
+#define FUEL_SYMBOL         "\xEF\x94\xAF"  // U+F52F
+#define OIL_TEMP_SYMBOL     "\xEF\x98\x93"  // U+F613 - Oil Can (droplet)
+#define OIL_PRESSURE_SYMBOL "\xEF\x98\x94"  // U+F614 - Oil pressure
+#define WATER_SYMBOL        "\xEF\x8B\x89"  // U+F2C9 - Thermometer
 
 // Text labels (used when USE_CUSTOM_ICON_FONT is disabled)
 #define WATER_TEXT_LABEL    "H2O"

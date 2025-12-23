@@ -25,7 +25,7 @@ static const gauge_config_t pressure_gauge_config = {
     .redline = (int32_t)(OIL_PRESSURE_REDLINE * PRESSURE_SCALE),
     .alert_threshold = (int32_t)(OIL_PRESSURE_ALERT_HIGH * PRESSURE_SCALE),  // High alert
     .marker_interval = 10,  // Markers every 1 bar (10 internal units)
-    .icon_symbol = OIL_SYMBOL
+    .icon_symbol = OIL_PRESSURE_SYMBOL
 };
 
 // Store current RPM for dynamic threshold calculation

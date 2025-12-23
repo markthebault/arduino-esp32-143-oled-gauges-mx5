@@ -1,7 +1,7 @@
 /*******************************************************************************
  * Size: 120 px
  * Bpp: 1
- * Opts: --bpp 1 --size 120 --no-compress --font Montserrat-Bold.ttf --symbols 1234567890 --format lvgl -o montserrat_bold_120.c
+ * Opts: --bpp 1 --size 120 --no-compress --stride 1 --align 1 --font Montserrat-Bold.ttf --range 48-57,46 --format lvgl -o montserrat_bold_numbers_120.c
  ******************************************************************************/
 
 #ifdef __has_include
@@ -18,17 +18,31 @@
     #include "lvgl/lvgl.h"
 #endif
 
-#ifndef MONTSERRAT_BOLD_120
-#define MONTSERRAT_BOLD_120 1
+
+
+#ifndef MONTSERRAT_BOLD_NUMBERS_120
+#define MONTSERRAT_BOLD_NUMBERS_120 1
 #endif
 
-#if MONTSERRAT_BOLD_120
+#if MONTSERRAT_BOLD_NUMBERS_120
+
 /*-----------------
  *    BITMAPS
  *----------------*/
 
 /*Store the image of the glyphs*/
-static LV_ATTRIBUTE_LARGE_CONST const uint8_t montserrat_bold_number_120_glyph_bitmap[] = {
+static LV_ATTRIBUTE_LARGE_CONST const uint8_t mont_120_glyph_bitmap[] = {
+    /* U+002E "." */
+    0x0, 0xfe, 0x0, 0x7, 0xff, 0x0, 0x3f, 0xff,
+    0x80, 0xff, 0xff, 0x83, 0xff, 0xff, 0x8f, 0xff,
+    0xff, 0x9f, 0xff, 0xff, 0x3f, 0xff, 0xfe, 0xff,
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    0xff, 0xff, 0xff, 0xbf, 0xff, 0xfe, 0x7f, 0xff,
+    0xfc, 0x7f, 0xff, 0xf0, 0xff, 0xff, 0xe0, 0xff,
+    0xff, 0x80, 0xff, 0xfe, 0x0, 0x7f, 0xf0, 0x0,
+    0x3f, 0x80, 0x0,
+
     /* U+0030 "0" */
     0x0, 0x0, 0x0, 0x3, 0xff, 0xc0, 0x0, 0x0,
     0x0, 0x0, 0x0, 0x0, 0x7f, 0xff, 0xfe, 0x0,
@@ -953,32 +967,36 @@ static LV_ATTRIBUTE_LARGE_CONST const uint8_t montserrat_bold_number_120_glyph_b
  *  GLYPH DESCRIPTION
  *--------------------*/
 
-static const lv_font_fmt_txt_glyph_dsc_t montserrat_bold_number_120_glyph_dsc[] = {
+static const lv_font_fmt_txt_glyph_dsc_t mont_120_glyph_dsc[] = {
     {.bitmap_index = 0, .adv_w = 0, .box_w = 0, .box_h = 0, .ofs_x = 0, .ofs_y = 0} /* id = 0 reserved */,
-    {.bitmap_index = 0, .adv_w = 1304, .box_w = 72, .box_h = 87, .ofs_x = 5, .ofs_y = -1},
-    {.bitmap_index = 783, .adv_w = 753, .box_w = 36, .box_h = 84, .ofs_x = 1, .ofs_y = 0},
-    {.bitmap_index = 1161, .adv_w = 1133, .box_w = 67, .box_h = 86, .ofs_x = 0, .ofs_y = 0},
-    {.bitmap_index = 1882, .adv_w = 1137, .box_w = 66, .box_h = 86, .ofs_x = 0, .ofs_y = -1},
-    {.bitmap_index = 2592, .adv_w = 1323, .box_w = 79, .box_h = 85, .ofs_x = 3, .ofs_y = 0},
-    {.bitmap_index = 3432, .adv_w = 1142, .box_w = 66, .box_h = 86, .ofs_x = 1, .ofs_y = -1},
-    {.bitmap_index = 4142, .adv_w = 1223, .box_w = 69, .box_h = 88, .ofs_x = 5, .ofs_y = -1},
-    {.bitmap_index = 4901, .adv_w = 1190, .box_w = 68, .box_h = 85, .ofs_x = 3, .ofs_y = 0},
-    {.bitmap_index = 5624, .adv_w = 1267, .box_w = 70, .box_h = 88, .ofs_x = 4, .ofs_y = -1},
-    {.bitmap_index = 6394, .adv_w = 1223, .box_w = 69, .box_h = 88, .ofs_x = 2, .ofs_y = -1}
+    {.bitmap_index = 0, .adv_w = 503, .box_w = 23, .box_h = 23, .ofs_x = 4, .ofs_y = -1},
+    {.bitmap_index = 67, .adv_w = 1304, .box_w = 72, .box_h = 87, .ofs_x = 5, .ofs_y = -1},
+    {.bitmap_index = 850, .adv_w = 753, .box_w = 36, .box_h = 84, .ofs_x = 1, .ofs_y = 0},
+    {.bitmap_index = 1228, .adv_w = 1133, .box_w = 67, .box_h = 86, .ofs_x = 0, .ofs_y = 0},
+    {.bitmap_index = 1949, .adv_w = 1137, .box_w = 66, .box_h = 86, .ofs_x = 0, .ofs_y = -1},
+    {.bitmap_index = 2659, .adv_w = 1323, .box_w = 79, .box_h = 85, .ofs_x = 3, .ofs_y = 0},
+    {.bitmap_index = 3499, .adv_w = 1142, .box_w = 66, .box_h = 86, .ofs_x = 1, .ofs_y = -1},
+    {.bitmap_index = 4209, .adv_w = 1223, .box_w = 69, .box_h = 88, .ofs_x = 5, .ofs_y = -1},
+    {.bitmap_index = 4968, .adv_w = 1190, .box_w = 68, .box_h = 85, .ofs_x = 3, .ofs_y = 0},
+    {.bitmap_index = 5691, .adv_w = 1267, .box_w = 70, .box_h = 88, .ofs_x = 4, .ofs_y = -1},
+    {.bitmap_index = 6461, .adv_w = 1223, .box_w = 69, .box_h = 88, .ofs_x = 2, .ofs_y = -1}
 };
 
 /*---------------------
  *  CHARACTER MAPPING
  *--------------------*/
 
-
+static const uint8_t glyph_id_ofs_list_0[] = {
+    0, 0, 1, 2, 3, 4, 5, 6,
+    7, 8, 9, 10
+};
 
 /*Collect the unicode lists and glyph_id offsets*/
-static const lv_font_fmt_txt_cmap_t montserrat_bold_number_120_cmaps[] =
+static const lv_font_fmt_txt_cmap_t mont_120_cmaps[] =
 {
     {
-        .range_start = 48, .range_length = 10, .glyph_id_start = 1,
-        .unicode_list = NULL, .glyph_id_ofs_list = NULL, .list_length = 0, .type = LV_FONT_FMT_TXT_CMAP_FORMAT0_TINY
+        .range_start = 46, .range_length = 12, .glyph_id_start = 1,
+        .unicode_list = NULL, .glyph_id_ofs_list = glyph_id_ofs_list_0, .list_length = 12, .type = LV_FONT_FMT_TXT_CMAP_FORMAT0_FULL
     }
 };
 
@@ -994,13 +1012,13 @@ static  lv_font_fmt_txt_glyph_cache_t cache;
 #endif
 
 #if LVGL_VERSION_MAJOR >= 8
-static const lv_font_fmt_txt_dsc_t montserrat_bold_number_120_font_dsc = {
+static const lv_font_fmt_txt_dsc_t mont_120_font_dsc = {
 #else
-static lv_font_fmt_txt_dsc_t montserrat_bold_number_120_font_dsc = {
+static lv_font_fmt_txt_dsc_t mont_120_font_dsc = {
 #endif
-    .glyph_bitmap = montserrat_bold_number_120_glyph_bitmap,
-    .glyph_dsc = montserrat_bold_number_120_glyph_dsc,
-    .cmaps = montserrat_bold_number_120_cmaps,
+    .glyph_bitmap = mont_120_glyph_bitmap,
+    .glyph_dsc = mont_120_glyph_dsc,
+    .cmaps = mont_120_cmaps,
     .kern_dsc = NULL,
     .kern_scale = 0,
     .cmap_num = 1,
@@ -1010,8 +1028,10 @@ static lv_font_fmt_txt_dsc_t montserrat_bold_number_120_font_dsc = {
 #if LVGL_VERSION_MAJOR == 8
     .cache = &cache
 #endif
+
 };
 
+extern const lv_font_t lv_font_montserrat_48;
 
 
 /*-----------------
@@ -1020,9 +1040,9 @@ static lv_font_fmt_txt_dsc_t montserrat_bold_number_120_font_dsc = {
 
 /*Initialize a public general font descriptor*/
 #if LVGL_VERSION_MAJOR >= 8
-const lv_font_t montserrat_bold_number_120 = {
+const lv_font_t montserrat_bold_numbers_120 = {
 #else
-lv_font_t montserrat_bold_number_120 = {
+lv_font_t montserrat_bold_numbers_120 = {
 #endif
     .get_glyph_dsc = lv_font_get_glyph_dsc_fmt_txt,    /*Function pointer to get glyph's data*/
     .get_glyph_bitmap = lv_font_get_bitmap_fmt_txt,    /*Function pointer to get glyph's bitmap*/
@@ -1035,13 +1055,14 @@ lv_font_t montserrat_bold_number_120 = {
     .underline_position = -12,
     .underline_thickness = 6,
 #endif
-    .dsc = &montserrat_bold_number_120_font_dsc,          /*The custom font data. Will be accessed by `get_glyph_bitmap/dsc` */
+    // .static_bitmap = 0,
+    .dsc = &mont_120_font_dsc,          /*The custom font data. Will be accessed by `get_glyph_bitmap/dsc` */
 #if LV_VERSION_CHECK(8, 2, 0) || LVGL_VERSION_MAJOR >= 9
-    .fallback = NULL,
+    .fallback = &lv_font_montserrat_48,
 #endif
     .user_data = NULL,
 };
 
 
 
-#endif /*#if MONTSERRAT_BOLD_120*/
+#endif /*#if MONTSERRAT_BOLD_NUMBERS_120*/

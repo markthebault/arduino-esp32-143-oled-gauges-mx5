@@ -7,9 +7,17 @@ extern "C" {
 #include <math.h>
 
 // Include custom font definitions (only in this compilation unit)
-#if USE_CUSTOM_TEMP_FONT || USE_CUSTOM_ICON_FONT
-    #include "../fonts/montserrat_bold_number_120.h"
-    #include "../fonts/fa_icons_54.h"
+#if USE_CUSTOM_TEMP_FONT
+    #include "../fonts/montserrat_bold_numbers_120.h"
+#endif
+
+#if USE_CUSTOM_ICON_FONT
+    #ifdef USE_SCREEN_466PX
+        #include "../fonts/fa_icons_54.h"
+    #endif
+    #ifdef USE_SCREEN_240PX
+        #include "../fonts/fa_icons_32.h"
+    #endif
 #endif
 
 // ============================================================================
@@ -223,8 +231,10 @@ lv_obj_t* gauge_create_icon(const char *icon_symbol) {
         lv_label_set_text(icon, icon_symbol);
     #else
         // Use text fallback from global configuration
-        if (icon_symbol == OIL_SYMBOL) {
+        if (icon_symbol == OIL_TEMP_SYMBOL) {
             lv_label_set_text(icon, OIL_TEMP_TEXT_LABEL);
+        } else if (icon_symbol == OIL_PRESSURE_SYMBOL) {
+            lv_label_set_text(icon, OIL_PRES_TEXT_LABEL);
         } else if (icon_symbol == WATER_SYMBOL) {
             lv_label_set_text(icon, WATER_TEXT_LABEL);
         } else {

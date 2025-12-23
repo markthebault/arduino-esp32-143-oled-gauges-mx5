@@ -221,14 +221,14 @@ void multi_gauge_init(void) {
 
     // Create oil temperature row (middle)
     create_bar_gauge_row(
-        &oil_temp_bar, row2_y, OIL_SYMBOL, OIL_TEMP_TEXT_LABEL,
+        &oil_temp_bar, row2_y, OIL_TEMP_SYMBOL, OIL_TEMP_TEXT_LABEL,
         OIL_TEMP_MIN, OIL_TEMP_MAX,
         OIL_TEMP_ZONE_GREEN, OIL_TEMP_ZONE_ORANGE, OIL_TEMP_ZONE_RED
     );
 
     // Create oil pressure row (bottom)
     create_bar_gauge_row(
-        &oil_pressure_bar, row3_y, OIL_SYMBOL, OIL_PRES_TEXT_LABEL,
+        &oil_pressure_bar, row3_y, OIL_PRESSURE_SYMBOL, OIL_PRES_TEXT_LABEL,
         OIL_PRESSURE_MIN, OIL_PRESSURE_MAX,
         OIL_PRESSURE_ZONE_GREEN, OIL_PRESSURE_ZONE_ORANGE, OIL_PRESSURE_ZONE_RED
     );
