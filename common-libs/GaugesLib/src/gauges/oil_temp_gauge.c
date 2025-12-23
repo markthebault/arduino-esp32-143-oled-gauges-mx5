@@ -20,7 +20,8 @@ static const gauge_config_t oil_gauge_config = {
     .redline = OIL_TEMP_REDLINE,
     .alert_threshold = OIL_TEMP_ALERT_THRESHOLD,
     .marker_interval = OIL_TEMP_MARKER_INTERVAL,
-    .icon_symbol = OIL_TEMP_SYMBOL
+    .icon_symbol = OIL_TEMP_SYMBOL,
+    .value_scale = 1  // No scaling for temperature
 };
 
 // ============================================================================

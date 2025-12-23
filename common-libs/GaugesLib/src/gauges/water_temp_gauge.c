@@ -20,7 +20,8 @@ static const gauge_config_t water_gauge_config = {
     .redline = WATER_TEMP_REDLINE,
     .alert_threshold = WATER_TEMP_ALERT_THRESHOLD,
     .marker_interval = WATER_TEMP_MARKER_INTERVAL,
-    .icon_symbol = WATER_SYMBOL
+    .icon_symbol = WATER_SYMBOL,
+    .value_scale = 1  // No scaling for temperature
 };
 
 // ============================================================================

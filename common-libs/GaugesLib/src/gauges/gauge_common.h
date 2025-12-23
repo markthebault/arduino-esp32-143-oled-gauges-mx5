@@ -36,6 +36,9 @@ typedef struct {
     // Display configuration
     int32_t marker_interval;
     const char *icon_symbol;
+
+    // Value scaling (1 for no scaling, 10 for pressure gauges, etc.)
+    int32_t value_scale;
 } gauge_config_t;
 
 /**

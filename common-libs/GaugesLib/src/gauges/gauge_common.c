@@ -163,8 +163,18 @@ void gauge_create_border_and_markers(const gauge_config_t *config) {
 
         // Create label
         lv_obj_t *label = lv_label_create(lv_scr_act());
-        char text[4];
-        snprintf(text, sizeof(text), "%d", temp_value);
+        char text[8];
+
+        // Format text based on value scale
+        if (config->value_scale > 1) {
+            // Show decimal value (e.g., for pressure: 10 -> 1.0)
+            int scaled_value = temp_value / config->value_scale;
+            snprintf(text, sizeof(text), "%d", scaled_value);
+        } else {
+            // Show integer value (e.g., for temperature: 80 -> 80)
+            snprintf(text, sizeof(text), "%d", temp_value);
+        }
+
         lv_label_set_text(label, text);
         lv_obj_add_style(label, &style_marker_text, 0);
         lv_obj_align(label, LV_ALIGN_CENTER, label_x, label_y);
