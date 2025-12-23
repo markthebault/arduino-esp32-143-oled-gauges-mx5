@@ -26,6 +26,9 @@ void setup() {
     example_lvgl_unlock();
   }
 
+  // Note: Performance monitor is automatically created by LVGL 8 when LV_USE_PERF_MONITOR is enabled
+  // Position is set by LV_USE_PERF_MONITOR_POS in lv_conf.h
+
   // 2. Initialize ESP-NOW Receiver (Wi-Fi + ESP-NOW)
   espnow_receiver_init();
 }

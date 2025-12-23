@@ -182,7 +182,10 @@ void setup()
 
   // Initialize your custom gauge manager
   gauge_manager_init();
-  
+
+  // Note: Performance monitor is automatically created by LVGL 8 when LV_USE_PERF_MONITOR is enabled
+  // Position is set by LV_USE_PERF_MONITOR_POS in lv_conf.h
+
   Serial.println("Setup done");
 }
 
