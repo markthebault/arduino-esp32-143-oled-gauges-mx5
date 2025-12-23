@@ -143,12 +143,12 @@ extern "C" {
 // ============================================================================
 
 #define MULTI_GAUGE_LEFT_PADDING    ((int)(30 * GAUGE_SCALE))  // Left edge padding
-#define MULTI_GAUGE_BAR_WIDTH       ((int)(200 * GAUGE_SCALE))
+#define MULTI_GAUGE_BAR_WIDTH       ((int)(185 * GAUGE_SCALE))
 #define MULTI_GAUGE_BAR_HEIGHT      ((int)(40 * GAUGE_SCALE))
 #define MULTI_GAUGE_ROW_SPACING     ((int)(85 * GAUGE_SCALE))
 #define MULTI_GAUGE_ICON_SIZE       ((int)(48 * GAUGE_SCALE))
 #define MULTI_GAUGE_VALUE_WIDTH     ((int)(110 * GAUGE_SCALE))
-#define MULTI_GAUGE_ICON_BAR_GAP    ((int)(80 * GAUGE_SCALE))  // Gap between icon and bar start
+#define MULTI_GAUGE_ICON_BAR_GAP    ((int)(100 * GAUGE_SCALE))  // Gap between icon and bar start
 
 // ============================================================================
 // DEFAULT GAUGE SELECTION
