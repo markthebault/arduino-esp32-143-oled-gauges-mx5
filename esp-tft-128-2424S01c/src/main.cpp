@@ -195,5 +195,5 @@ void loop()
 
   gauge_manager_update_test_animation(); // Update gauge values with test animation
   
-  delay(30); // Small delay to prevent hogging CPU
+  delay(70); // Small delay to prevent hogging CPU
 }
