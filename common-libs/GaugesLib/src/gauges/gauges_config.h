@@ -62,12 +62,18 @@ extern "C" {
 #define COLOR_RED     lv_color_hex(0xE53935)   // Alert. OLED-safe red
 
 // ============================================================================
-// ICON SYMBOLS
+// ICON SYMBOLS AND TEXT LABELS
 // ============================================================================
 
+// Icon symbols (used when USE_CUSTOM_ICON_FONT is enabled)
 #define FUEL_SYMBOL   "\xEF\x94\xAF"  // U+F52F
 #define OIL_SYMBOL    "\xEF\x98\x93"  // U+F613 - Droplet
 #define WATER_SYMBOL  "\xEF\x8B\x89"  // U+F2C9 - Thermometer
+
+// Text labels (used when USE_CUSTOM_ICON_FONT is disabled)
+#define WATER_TEXT_LABEL    "H2O"
+#define OIL_TEMP_TEXT_LABEL "OIL T"
+#define OIL_PRES_TEXT_LABEL "OIL P"
 
 // ============================================================================
 // COMMON GAUGE DIMENSIONS (Scaled)
@@ -134,11 +140,13 @@ extern "C" {
 // MULTI GAUGE BAR CONFIGURATION
 // ============================================================================
 
+#define MULTI_GAUGE_LEFT_PADDING    ((int)(30 * GAUGE_SCALE))  // Left edge padding
 #define MULTI_GAUGE_BAR_WIDTH       ((int)(200 * GAUGE_SCALE))
 #define MULTI_GAUGE_BAR_HEIGHT      ((int)(40 * GAUGE_SCALE))
 #define MULTI_GAUGE_ROW_SPACING     ((int)(85 * GAUGE_SCALE))
 #define MULTI_GAUGE_ICON_SIZE       ((int)(48 * GAUGE_SCALE))
 #define MULTI_GAUGE_VALUE_WIDTH     ((int)(110 * GAUGE_SCALE))
+#define MULTI_GAUGE_ICON_BAR_GAP    ((int)(80 * GAUGE_SCALE))  // Gap between icon and bar start
 
 // ============================================================================
 // DEFAULT GAUGE SELECTION

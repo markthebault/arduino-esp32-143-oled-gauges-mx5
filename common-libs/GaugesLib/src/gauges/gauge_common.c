@@ -222,12 +222,11 @@ lv_obj_t* gauge_create_icon(const char *icon_symbol) {
         // Use Font Awesome icon symbol
         lv_label_set_text(icon, icon_symbol);
     #else
-        // Use text fallback for displays without custom icon fonts
-        // You can customize these symbols or use built-in LVGL symbols
+        // Use text fallback from global configuration
         if (icon_symbol == OIL_SYMBOL) {
-            lv_label_set_text(icon, "OIL");
+            lv_label_set_text(icon, OIL_TEMP_TEXT_LABEL);
         } else if (icon_symbol == WATER_SYMBOL) {
-            lv_label_set_text(icon, "H2O");
+            lv_label_set_text(icon, WATER_TEXT_LABEL);
         } else {
             lv_label_set_text(icon, "---");
         }

@@ -12,6 +12,7 @@ extern "C" {
 typedef struct {
     lv_obj_t *bar;
     lv_obj_t *value_label;
+    lv_obj_t *unit_label;
     lv_obj_t *icon_label;
     int32_t min_value;
     int32_t max_value;
@@ -47,6 +48,7 @@ static lv_color_t get_color_for_value(int32_t value, int32_t zone_green, int32_t
  * @brief Create a horizontal bar gauge row
  */
 static void create_bar_gauge_row(bar_gauge_t *gauge, int32_t y_pos, const char *icon_symbol,
+                                  const char *text_label,
                                   int32_t min_val, int32_t max_val,
                                   int32_t zone_green, int32_t zone_orange, int32_t zone_red) {
     // Store configuration
@@ -56,23 +58,24 @@ static void create_bar_gauge_row(bar_gauge_t *gauge, int32_t y_pos, const char *
     gauge->zone_orange = zone_orange;
     gauge->zone_red = zone_red;
 
-    // Create icon label
+    // Create icon/label
     gauge->icon_label = lv_label_create(lv_scr_act());
-    lv_label_set_text(gauge->icon_label, icon_symbol);
-    lv_obj_set_style_text_color(gauge->icon_label, COLOR_WHITE, 0);
 
     #if USE_CUSTOM_ICON_FONT
+    lv_label_set_text(gauge->icon_label, icon_symbol);
     lv_obj_set_style_text_font(gauge->icon_label, FONT_ICON, 0);
     #else
+    lv_label_set_text(gauge->icon_label, text_label);
     lv_obj_set_style_text_font(gauge->icon_label, FONT_MARKERS, 0);
     #endif
 
-    lv_obj_align(gauge->icon_label, LV_ALIGN_LEFT_MID, (int)(20 * GAUGE_SCALE), y_pos);
+    lv_obj_set_style_text_color(gauge->icon_label, COLOR_WHITE, 0);
+    lv_obj_align(gauge->icon_label, LV_ALIGN_LEFT_MID, MULTI_GAUGE_LEFT_PADDING, y_pos);
 
     // Create horizontal bar
     gauge->bar = lv_bar_create(lv_scr_act());
     lv_obj_set_size(gauge->bar, MULTI_GAUGE_BAR_WIDTH, MULTI_GAUGE_BAR_HEIGHT);
-    lv_obj_align(gauge->bar, LV_ALIGN_LEFT_MID, (int)(80 * GAUGE_SCALE), y_pos);
+    lv_obj_align(gauge->bar, LV_ALIGN_LEFT_MID, MULTI_GAUGE_LEFT_PADDING + MULTI_GAUGE_ICON_BAR_GAP, y_pos);
 
     // Style the bar
     lv_obj_set_style_bg_color(gauge->bar, lv_color_hex(0x1A1A1A), LV_PART_MAIN);
@@ -88,14 +91,21 @@ static void create_bar_gauge_row(bar_gauge_t *gauge, int32_t y_pos, const char *
     lv_obj_set_style_bg_color(gauge->bar, COLOR_GREEN, LV_PART_INDICATOR);
     lv_obj_set_style_radius(gauge->bar, (int)(2 * GAUGE_SCALE), LV_PART_INDICATOR);
 
-    // Create value label
+    // Create value label (numeric value only)
     gauge->value_label = lv_label_create(lv_scr_act());
     lv_label_set_text(gauge->value_label, "---");
     lv_obj_set_style_text_color(gauge->value_label, COLOR_WHITE, 0);
-    lv_obj_set_style_text_font(gauge->value_label, FONT_TEMP_UNIT, 0);
+    lv_obj_set_style_text_font(gauge->value_label, FONT_TEMP_UNIT, 0);  // Larger font for number
     lv_obj_align(gauge->value_label, LV_ALIGN_LEFT_MID,
-                 (int)(80 * GAUGE_SCALE) + MULTI_GAUGE_BAR_WIDTH + (int)(20 * GAUGE_SCALE),
+                 MULTI_GAUGE_LEFT_PADDING + MULTI_GAUGE_ICON_BAR_GAP + MULTI_GAUGE_BAR_WIDTH + (int)(15 * GAUGE_SCALE),
                  y_pos);
+
+    // Create unit label (smaller font for units)
+    gauge->unit_label = lv_label_create(lv_scr_act());
+    lv_label_set_text(gauge->unit_label, "");
+    lv_obj_set_style_text_color(gauge->unit_label, COLOR_WHITE, 0);
+    lv_obj_set_style_text_font(gauge->unit_label, FONT_MARKERS, 0);  // Smaller font for unit
+    // Position will be updated relative to value_label after text is set
 }
 
 /**
@@ -113,10 +123,16 @@ static void update_bar_gauge(bar_gauge_t *gauge, int32_t value, const char *unit
     lv_color_t color = get_color_for_value(value, gauge->zone_green, gauge->zone_orange, gauge->zone_red);
     lv_obj_set_style_bg_color(gauge->bar, color, LV_PART_INDICATOR);
 
-    // Update value label
-    char buf[32];
-    lv_snprintf(buf, sizeof(buf), "%d %s", (int)value, unit);
+    // Update value label (number only)
+    char buf[16];
+    lv_snprintf(buf, sizeof(buf), "%d", (int)value);
     lv_label_set_text(gauge->value_label, buf);
+
+    // Update unit label
+    lv_label_set_text(gauge->unit_label, unit);
+
+    // Position unit label to the right of value label
+    lv_obj_align_to(gauge->unit_label, gauge->value_label, LV_ALIGN_OUT_RIGHT_MID, (int)(3 * GAUGE_SCALE), 0);
 }
 
 /**
@@ -146,10 +162,16 @@ static void update_pressure_bar_gauge(bar_gauge_t *gauge, float value) {
     }
     lv_obj_set_style_bg_color(gauge->bar, color, LV_PART_INDICATOR);
 
-    // Update value label with one decimal place
-    char buf[32];
-    lv_snprintf(buf, sizeof(buf), "%d.%d bar", (int)value, (int)((value - (int)value) * 10));
+    // Update value label with one decimal place (number only)
+    char buf[16];
+    lv_snprintf(buf, sizeof(buf), "%d.%d", (int)value, (int)((value - (int)value) * 10));
     lv_label_set_text(gauge->value_label, buf);
+
+    // Update unit label
+    lv_label_set_text(gauge->unit_label, "bar");
+
+    // Position unit label to the right of value label
+    lv_obj_align_to(gauge->unit_label, gauge->value_label, LV_ALIGN_OUT_RIGHT_MID, (int)(3 * GAUGE_SCALE), 0);
 }
 
 // ============================================================================
@@ -159,29 +181,29 @@ static void update_pressure_bar_gauge(bar_gauge_t *gauge, float value) {
 void multi_gauge_init(void) {
     // Calculate vertical positions for three rows, centered on screen
     int32_t screen_center_y = 0;
-    int32_t row1_y = screen_center_y - MULTI_GAUGE_ROW_SPACING;
+    int32_t row1_y = screen_center_y + MULTI_GAUGE_ROW_SPACING;
     int32_t row2_y = screen_center_y;
-    int32_t row3_y = screen_center_y + MULTI_GAUGE_ROW_SPACING;
+    int32_t row3_y = screen_center_y - MULTI_GAUGE_ROW_SPACING;
 
-    // Create oil pressure row
+    // Create water temperature row (top)
     create_bar_gauge_row(
-        &oil_pressure_bar, row3_y, OIL_SYMBOL,
-        OIL_PRESSURE_MIN, OIL_PRESSURE_MAX,
-        OIL_PRESSURE_ZONE_GREEN, OIL_PRESSURE_ZONE_ORANGE, OIL_PRESSURE_ZONE_RED
+        &water_temp_bar, row1_y, WATER_SYMBOL, WATER_TEXT_LABEL,
+        WATER_TEMP_MIN, WATER_TEMP_MAX,
+        WATER_TEMP_ZONE_GREEN, WATER_TEMP_ZONE_ORANGE, WATER_TEMP_ZONE_RED
     );
 
-    // Create oil temperature row
+    // Create oil temperature row (middle)
     create_bar_gauge_row(
-        &oil_temp_bar, row2_y, OIL_SYMBOL,
+        &oil_temp_bar, row2_y, OIL_SYMBOL, OIL_TEMP_TEXT_LABEL,
         OIL_TEMP_MIN, OIL_TEMP_MAX,
         OIL_TEMP_ZONE_GREEN, OIL_TEMP_ZONE_ORANGE, OIL_TEMP_ZONE_RED
     );
-    
-                         // Create water temperature row
+
+    // Create oil pressure row (bottom)
     create_bar_gauge_row(
-        &water_temp_bar, row1_y, WATER_SYMBOL,
-        WATER_TEMP_MIN, WATER_TEMP_MAX,
-        WATER_TEMP_ZONE_GREEN, WATER_TEMP_ZONE_ORANGE, WATER_TEMP_ZONE_RED
+        &oil_pressure_bar, row3_y, OIL_SYMBOL, OIL_PRES_TEXT_LABEL,
+        OIL_PRESSURE_MIN, OIL_PRESSURE_MAX,
+        OIL_PRESSURE_ZONE_GREEN, OIL_PRESSURE_ZONE_ORANGE, OIL_PRESSURE_ZONE_RED
     );
 }
 
