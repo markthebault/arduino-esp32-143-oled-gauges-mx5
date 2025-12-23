@@ -97,7 +97,7 @@ static void create_bar_gauge_row(bar_gauge_t *gauge, int32_t y_pos, const char *
     lv_obj_set_style_text_color(gauge->value_label, COLOR_WHITE, 0);
     lv_obj_set_style_text_font(gauge->value_label, FONT_TEMP_UNIT, 0);  // Larger font for number
     lv_obj_align(gauge->value_label, LV_ALIGN_LEFT_MID,
-                 MULTI_GAUGE_LEFT_PADDING + MULTI_GAUGE_ICON_BAR_GAP + MULTI_GAUGE_BAR_WIDTH + (int)(15 * GAUGE_SCALE),
+                 MULTI_GAUGE_LEFT_PADDING + MULTI_GAUGE_ICON_BAR_GAP + MULTI_GAUGE_BAR_WIDTH + (int)(25 * GAUGE_SCALE),
                  y_pos);
 
     // Create unit label (smaller font for units)
