@@ -14,11 +14,11 @@ typedef struct {
     lv_obj_t *value_label;
     lv_obj_t *unit_label;
     lv_obj_t *icon_label;
-    int32_t min_value;
-    int32_t max_value;
-    int32_t zone_green;
-    int32_t zone_orange;
-    int32_t zone_red;
+    float min_value;
+    float max_value;
+    float zone_green;
+    float zone_orange;
+    float zone_red;
 } bar_gauge_t;
 
 static bar_gauge_t water_temp_bar;
@@ -32,7 +32,7 @@ static bar_gauge_t oil_pressure_bar;
 /**
  * @brief Get color based on value and thresholds
  */
-static lv_color_t get_color_for_value(int32_t value, int32_t zone_green, int32_t zone_orange, int32_t zone_red) {
+static lv_color_t get_color_for_value(float value, float zone_green, float zone_orange, float zone_red) {
     if (value >= zone_red) {
         return COLOR_RED;
     } else if (value >= zone_orange) {
@@ -49,8 +49,8 @@ static lv_color_t get_color_for_value(int32_t value, int32_t zone_green, int32_t
  */
 static void create_bar_gauge_row(bar_gauge_t *gauge, int32_t y_pos, const char *icon_symbol,
                                   const char *text_label,
-                                  int32_t min_val, int32_t max_val,
-                                  int32_t zone_green, int32_t zone_orange, int32_t zone_red) {
+                                  float min_val, float max_val,
+                                  float zone_green, float zone_orange, float zone_red) {
     // Store configuration
     gauge->min_value = min_val;
     gauge->max_value = max_val;
@@ -83,9 +83,9 @@ static void create_bar_gauge_row(bar_gauge_t *gauge, int32_t y_pos, const char *
     lv_obj_set_style_border_color(gauge->bar, COLOR_GREY, LV_PART_MAIN);
     lv_obj_set_style_radius(gauge->bar, (int)(4 * GAUGE_SCALE), LV_PART_MAIN);
 
-    // Set bar range
-    lv_bar_set_range(gauge->bar, min_val, max_val);
-    lv_bar_set_value(gauge->bar, min_val, LV_ANIM_OFF);
+    // Set bar range (cast to int32_t for LVGL)
+    lv_bar_set_range(gauge->bar, (int32_t)min_val, (int32_t)max_val);
+    lv_bar_set_value(gauge->bar, (int32_t)min_val, LV_ANIM_OFF);
 
     // Style the indicator (the filled part)
     lv_obj_set_style_bg_color(gauge->bar, COLOR_GREEN, LV_PART_INDICATOR);
@@ -113,8 +113,8 @@ static void create_bar_gauge_row(bar_gauge_t *gauge, int32_t y_pos, const char *
  */
 static void update_bar_gauge(bar_gauge_t *gauge, int32_t value, const char *unit) {
     // Constrain value to range
-    if (value < gauge->min_value) value = gauge->min_value;
-    if (value > gauge->max_value) value = gauge->max_value;
+    if (value < (int32_t)gauge->min_value) value = (int32_t)gauge->min_value;
+    if (value > (int32_t)gauge->max_value) value = (int32_t)gauge->max_value;
 
     // Update bar value with animation
     lv_bar_set_value(gauge->bar, value, LV_ANIM_ON);
@@ -136,27 +136,54 @@ static void update_bar_gauge(bar_gauge_t *gauge, int32_t value, const char *unit
 }
 
 /**
+ * @brief Calculate minimum safe oil pressure based on RPM
+ *
+ * For a 2.0L naturally aspirated engine (MX5 NC):
+ * - Idle (800 RPM): ~0.5 bar minimum
+ * - 3000 RPM: ~1.5 bar minimum
+ * - 6000 RPM: ~3.0 bar minimum
+ *
+ * @param rpm Engine RPM
+ * @return Minimum safe pressure in bar
+ */
+static float calculate_min_oil_pressure(int32_t rpm) {
+    // Conservative formula: 0.5 bar per 1000 RPM
+    float min_pressure = (float)rpm / 2000.0f;
+
+    // Ensure minimum of 0.5 bar at idle
+    if (min_pressure < 0.5f) {
+        min_pressure = 0.5f;
+    }
+
+    return min_pressure;
+}
+
+/**
  * @brief Update oil pressure bar gauge (handles float values)
  */
-static void update_pressure_bar_gauge(bar_gauge_t *gauge, float value) {
+static void update_pressure_bar_gauge(bar_gauge_t *gauge, float value, int32_t rpm) {
     // Constrain value to range
     if (value < gauge->min_value) value = gauge->min_value;
     if (value > gauge->max_value) value = gauge->max_value;
 
     // Update bar value with animation (convert float to int for bar)
-    int32_t bar_value = (int32_t)(value * 10); // Scale for better resolution
-    int32_t bar_max = gauge->max_value * 10;
+    int32_t bar_value = (int32_t)(value * 10.0f); // Scale for better resolution
+    int32_t bar_max = (int32_t)(gauge->max_value * 10.0f);
     lv_bar_set_range(gauge->bar, 0, bar_max);
     lv_bar_set_value(gauge->bar, bar_value, LV_ANIM_ON);
 
-    // Update bar color based on value
+    // Calculate dynamic minimum pressure threshold based on RPM
+    float min_safe_pressure = calculate_min_oil_pressure(rpm);
+
+    // Update bar color based on value with RPM-dependent low threshold
+    // Oil pressure is critical both when too low (relative to RPM) and too high
     lv_color_t color;
-    if (value < gauge->zone_green) {
-        color = COLOR_GREY;  // Too low
+    if (value < min_safe_pressure) {
+        color = COLOR_RED;   // Too low for current RPM - dangerous!
     } else if (value >= gauge->zone_red) {
-        color = COLOR_RED;   // Too high
+        color = COLOR_RED;   // Too high - dangerous!
     } else if (value >= gauge->zone_orange) {
-        color = COLOR_AMBER; // Getting high
+        color = COLOR_AMBER; // Getting high - warning
     } else {
         color = COLOR_GREEN; // Good range
     }
@@ -207,10 +234,10 @@ void multi_gauge_init(void) {
     );
 }
 
-void multi_gauge_set_values(int32_t water_temp, int32_t oil_temp, float oil_pressure) {
+void multi_gauge_set_values(int32_t water_temp, int32_t oil_temp, float oil_pressure, int32_t rpm) {
     update_bar_gauge(&water_temp_bar, water_temp, "°C");
     update_bar_gauge(&oil_temp_bar, oil_temp, "°C");
-    update_pressure_bar_gauge(&oil_pressure_bar, oil_pressure);
+    update_pressure_bar_gauge(&oil_pressure_bar, oil_pressure, rpm);
 }
 
 #ifdef __cplusplus

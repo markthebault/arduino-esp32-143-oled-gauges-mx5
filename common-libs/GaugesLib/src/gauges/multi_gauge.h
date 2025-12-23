@@ -27,11 +27,13 @@ void multi_gauge_init(void);
  * @param water_temp Water temperature in °C
  * @param oil_temp Oil temperature in °C
  * @param oil_pressure Oil pressure in bar
+ * @param rpm Engine RPM (used for dynamic oil pressure thresholds)
  *
  * Updates all three gauges with new values, including bar colors
- * and value displays.
+ * and value displays. Oil pressure color thresholds are calculated
+ * dynamically based on RPM.
  */
-void multi_gauge_set_values(int32_t water_temp, int32_t oil_temp, float oil_pressure);
+void multi_gauge_set_values(int32_t water_temp, int32_t oil_temp, float oil_pressure, int32_t rpm);
 
 #ifdef __cplusplus
 }

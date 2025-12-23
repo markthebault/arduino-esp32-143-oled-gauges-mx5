@@ -65,7 +65,7 @@ gauge_type_t gauge_manager_get_current(void) {
     return current_gauge;
 }
 
-void gauge_manager_update(float oilTemp, float waterTemp, float oilPressure) {
+void gauge_manager_update(float oilTemp, float waterTemp, float oilPressure, int32_t rpm) {
     // Update the appropriate gauge based on which one is currently visible
     switch (current_gauge) {
         case GAUGE_OIL_TEMP:
@@ -75,7 +75,7 @@ void gauge_manager_update(float oilTemp, float waterTemp, float oilPressure) {
             water_temp_gauge_set_value((int32_t)waterTemp);
             break;
         case GAUGE_MULTI:
-            multi_gauge_set_values((int32_t)waterTemp, (int32_t)oilTemp, oilPressure);
+            multi_gauge_set_values((int32_t)waterTemp, (int32_t)oilTemp, oilPressure, rpm);
             break;
         default:
             break;
@@ -89,6 +89,7 @@ void gauge_manager_update_test_animation(void) {
     int32_t oil_temp;
     int32_t water_temp;
     float oil_pressure;
+    int32_t rpm;
 
     if (t < 9000UL) {
         // --- Sweep Up (0 to 9 seconds) ---
@@ -102,6 +103,10 @@ void gauge_manager_update_test_animation(void) {
 
         // Oil Pressure: 0 -> 8 bar (Range of 8)
         oil_pressure = (float)((80UL * t) / 9000UL) / 10.0f;
+
+        // RPM: 800 -> 6000 (Range of 5200)
+        // rpm = 800 + (int32_t)((5200UL * t) / 9000UL);
+        rpm = 4000;
     }
     else {
         // --- Sweep Down (9 to 12 seconds) ---
@@ -116,9 +121,12 @@ void gauge_manager_update_test_animation(void) {
 
         // Oil Pressure: 8 -> 0 bar
         oil_pressure = 8.0f - (float)((80UL * t2) / 3000UL) / 10.0f;
+
+        // RPM: 6000 -> 800
+        rpm = 6000 - (int32_t)((5200UL * t2) / 3000UL);
     }
 
-    gauge_manager_update(oil_temp, water_temp, oil_pressure);
+    gauge_manager_update(oil_temp, water_temp, oil_pressure, rpm);
 }
 
 #ifdef __cplusplus

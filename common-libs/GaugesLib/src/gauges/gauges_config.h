@@ -127,14 +127,14 @@ extern "C" {
 // OIL PRESSURE GAUGE CONFIGURATION
 // ============================================================================
 
-#define OIL_PRESSURE_MIN              0
-#define OIL_PRESSURE_MAX              10
-#define OIL_PRESSURE_ZONE_GREEN       2
-#define OIL_PRESSURE_ZONE_ORANGE      7
-#define OIL_PRESSURE_ZONE_RED         8
-#define OIL_PRESSURE_REDLINE          8
-#define OIL_PRESSURE_ALERT_LOW        1     // Alert when pressure too low
-#define OIL_PRESSURE_ALERT_HIGH       9     // Alert when pressure too high
+#define OIL_PRESSURE_MIN              0.0f
+#define OIL_PRESSURE_MAX              8.0f
+#define OIL_PRESSURE_ZONE_GREEN       2.0f
+#define OIL_PRESSURE_ZONE_ORANGE      5.0f
+#define OIL_PRESSURE_ZONE_RED         7.0f
+#define OIL_PRESSURE_REDLINE          8.0f
+#define OIL_PRESSURE_ALERT_LOW        1.0f    // Alert when pressure too low
+#define OIL_PRESSURE_ALERT_HIGH       7.0f    // Alert when pressure too high
 
 // ============================================================================
 // MULTI GAUGE BAR CONFIGURATION
