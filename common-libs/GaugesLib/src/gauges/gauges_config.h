@@ -171,6 +171,16 @@ extern "C" {
 #define BLINK_ANIM_TIME       250   // ms - Alert blink animation
 #define BLINK_PLAYBACK_TIME   250   // ms - Alert blink reverse animation
 
+// ============================================================================
+// GESTURE CONFIGURATION
+// ============================================================================
+
+// Gesture support for gauge switching:
+// - LV_DIR_RIGHT (swipe right): Switch to next gauge
+// - LV_DIR_LEFT (swipe left): Switch to previous gauge
+// Both directions are automatically enabled when using gauge_manager_enable_gestures()
+#define GAUGE_SWITCH_GESTURE_DIR  LV_DIR_RIGHT  // Kept for backwards compatibility
+
 #ifdef __cplusplus
 }
 #endif

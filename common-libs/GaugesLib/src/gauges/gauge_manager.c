@@ -23,6 +23,28 @@ extern unsigned long millis(void);
 
 static gauge_type_t current_gauge = DEFAULT_GAUGE;
 static lv_obj_t *gauge_screens[GAUGE_COUNT] = {NULL};
+static gauge_gesture_callback_t gesture_callback = NULL;
+
+// ============================================================================
+// PRIVATE FUNCTIONS
+// ============================================================================
+
+/**
+ * @brief Internal gesture event handler
+ *
+ * Detects swipe gestures and switches gauges:
+ * - Right swipe: next gauge
+ * - Left swipe: previous gauge
+ */
+static void internal_gesture_handler(lv_event_t * e) {
+    lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
+
+    if (dir == LV_DIR_RIGHT) {
+        gauge_manager_next();
+    } else if (dir == LV_DIR_LEFT) {
+        gauge_manager_previous();
+    }
+}
 
 // ============================================================================
 // PUBLIC API IMPLEMENTATION
@@ -68,8 +90,42 @@ void gauge_manager_next(void) {
     }
 }
 
+void gauge_manager_previous(void) {
+    // Move to previous gauge, wrapping around
+    if (current_gauge == 0) {
+        current_gauge = (gauge_type_t)(GAUGE_COUNT - 1);
+    } else {
+        current_gauge = (gauge_type_t)(current_gauge - 1);
+    }
+
+    // Load the screen for the new gauge
+    if (gauge_screens[current_gauge] != NULL) {
+        lv_scr_load(gauge_screens[current_gauge]);
+    }
+}
+
 gauge_type_t gauge_manager_get_current(void) {
     return current_gauge;
+}
+
+void gauge_manager_enable_gestures(void) {
+    // Attach the internal gesture handler to all gauge screens
+    for (int i = 0; i < GAUGE_COUNT; i++) {
+        if (gauge_screens[i] != NULL) {
+            lv_obj_add_event_cb(gauge_screens[i], internal_gesture_handler, LV_EVENT_GESTURE, NULL);
+        }
+    }
+}
+
+void gauge_manager_set_gesture_callback(gauge_gesture_callback_t callback) {
+    gesture_callback = callback;
+
+    // Attach the custom gesture callback to all gauge screens
+    for (int i = 0; i < GAUGE_COUNT; i++) {
+        if (gauge_screens[i] != NULL) {
+            lv_obj_add_event_cb(gauge_screens[i], callback, LV_EVENT_GESTURE, NULL);
+        }
+    }
 }
 
 void gauge_manager_update(float oilTemp, float waterTemp, float oilPressure, int32_t rpm) {

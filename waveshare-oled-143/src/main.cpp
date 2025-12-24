@@ -3,20 +3,6 @@
 #include "gauges/gauge_manager.h"
 #include "./communication/esp_now_receiver.h"
 
-// Gesture event handler for swipe detection
-static void gesture_event_handler(lv_event_t * e) {
-  lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
-
-  if (dir == LV_DIR_RIGHT) {
-    Serial.println("Swipe right detected! Switching gauge...");
-    gauge_manager_next();
-
-    // Re-attach event handler to the new screen
-    lv_obj_t *screen = lv_scr_act();
-    lv_obj_add_event_cb(screen, gesture_event_handler, LV_EVENT_GESTURE, NULL);
-  }
-}
-
 void setup() {
   Serial.begin(115200);
   delay(2000); // Give serial time to start
@@ -29,11 +15,7 @@ void setup() {
   // 2. Initialize all gauges via the gauge manager
   if (example_lvgl_lock(-1)) {
     gauge_manager_init();
-
-    // Add gesture event handler to the current screen for swipe detection
-    lv_obj_t *screen = lv_scr_act();
-    lv_obj_add_event_cb(screen, gesture_event_handler, LV_EVENT_GESTURE, NULL);
-
+    gauge_manager_enable_gestures();  // Enable swipe gesture to switch gauges
     example_lvgl_unlock();
   }
 

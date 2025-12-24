@@ -20,6 +20,14 @@ typedef enum {
 } gauge_type_t;
 
 /**
+ * @brief Gesture event callback type for gauge switching
+ *
+ * User-provided callback that will be called when a gesture is detected
+ * on any gauge screen. The callback should call gauge_manager_next() to switch gauges.
+ */
+typedef void (*gauge_gesture_callback_t)(lv_event_t * e);
+
+/**
  * @brief Initialize the gauge manager and all gauges
  *
  * Initializes all gauges but only makes the first one visible.
@@ -28,12 +36,42 @@ typedef enum {
 void gauge_manager_init(void);
 
 /**
+ * @brief Enable gesture-based gauge switching
+ *
+ * Enables swipe gesture detection on all gauge screens:
+ * - Swipe RIGHT: Switch to next gauge
+ * - Swipe LEFT: Switch to previous gauge
+ *
+ * Call this after gauge_manager_init() to enable gesture support.
+ */
+void gauge_manager_enable_gestures(void);
+
+/**
+ * @brief Set custom gesture callback for gauge switching
+ *
+ * Attaches a custom gesture event callback to all gauge screens.
+ * Use this if you need custom behavior beyond just switching gauges.
+ * For standard gauge switching, use gauge_manager_enable_gestures() instead.
+ *
+ * @param callback Function to call when gesture is detected
+ */
+void gauge_manager_set_gesture_callback(gauge_gesture_callback_t callback);
+
+/**
  * @brief Switch to the next gauge
  *
  * Hides the current gauge and shows the next one in the sequence.
  * Wraps around to the first gauge after the last one.
  */
 void gauge_manager_next(void);
+
+/**
+ * @brief Switch to the previous gauge
+ *
+ * Hides the current gauge and shows the previous one in the sequence.
+ * Wraps around to the last gauge when going back from the first one.
+ */
+void gauge_manager_previous(void);
 
 /**
  * @brief Get the currently active gauge
