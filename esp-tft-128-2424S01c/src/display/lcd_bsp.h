@@ -14,7 +14,7 @@ bool lcd_init(void);
  * LVGL display flush callback
  * Pushes framebuffer data to the display using DMA
  */
-void lcd_flush_cb(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p);
+void lcd_flush_cb(lv_display_t *disp, const lv_area_t *area, uint8_t *color_p);
 
 /**
  * Get the width of the display

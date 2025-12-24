@@ -41,11 +41,11 @@ static const sh8601_lcd_init_cmd_t co5300_lcd_init_cmds[] =
 
 ///////////////////////
 ///////////////////////
+static lv_display_t *g_disp = NULL;  // Global display pointer for callback
+
 void lcd_lvgl_Init(void)
 {
   READ_LCD_ID = read_lcd_id();
-  static lv_disp_draw_buf_t disp_buf; // contains internal graphic buffer(s) called draw buffer(s)
-  static lv_disp_drv_t disp_drv;      // contains callback functions
 
   const spi_bus_config_t buscfg = SH8601_PANEL_BUS_QSPI_CONFIG(EXAMPLE_PIN_NUM_LCD_PCLK,
                                                                EXAMPLE_PIN_NUM_LCD_DATA0,
@@ -58,7 +58,7 @@ void lcd_lvgl_Init(void)
 
   const esp_lcd_panel_io_spi_config_t io_config = SH8601_PANEL_IO_QSPI_CONFIG(EXAMPLE_PIN_NUM_LCD_CS,
                                                                               example_notify_lvgl_flush_ready,
-                                                                              &disp_drv);
+                                                                              &g_disp);
 
   sh8601_vendor_config_t vendor_config = 
   {
@@ -87,32 +87,34 @@ void lcd_lvgl_Init(void)
   lv_init();
   lv_color_t *buf1 = (lv_color_t *)heap_caps_malloc(EXAMPLE_LCD_H_RES * EXAMPLE_LVGL_BUF_HEIGHT * sizeof(lv_color_t), MALLOC_CAP_DMA);
   assert(buf1);
-  // Use single buffering to save DMA memory (buf2 = NULL)
-  lv_disp_draw_buf_init(&disp_buf, buf1, NULL, EXAMPLE_LCD_H_RES * EXAMPLE_LVGL_BUF_HEIGHT);
-  lv_disp_drv_init(&disp_drv);
-  disp_drv.hor_res = EXAMPLE_LCD_H_RES;
-  disp_drv.ver_res = EXAMPLE_LCD_V_RES;
-  disp_drv.flush_cb = example_lvgl_flush_cb;
-  disp_drv.rounder_cb = example_lvgl_rounder_cb;
-  disp_drv.draw_buf = &disp_buf;
-  disp_drv.user_data = panel_handle;
 
-  // NOT WORKING to work that requires the following modification to the lvgl library:
-//   diff ./lib/lvgl/src/core/lv_refr.c ./tmp/lvgl/src/core/lv_refr.c
-// 1211a1212
-// >             height &= ~0x1UL;
+  // Create LVGL display
+  lv_display_t *disp = lv_display_create(EXAMPLE_LCD_H_RES, EXAMPLE_LCD_V_RES);
+  g_disp = disp;  // Store globally for callback
+
+  // Set color format to RGB565 (try without byte swapping first)
+  // If colors are wrong, try LV_COLOR_FORMAT_RGB565_SWAPPED instead
+  lv_display_set_color_format(disp, LV_COLOR_FORMAT_RGB565);
+
+  // Set up single buffering to save DMA memory
+  // NOTE: In LVGL 9, buffer size is specified in PIXELS, not bytes
+  lv_display_set_buffers(disp, buf1, NULL, EXAMPLE_LCD_H_RES * EXAMPLE_LVGL_BUF_HEIGHT, LV_DISPLAY_RENDER_MODE_PARTIAL);
+
+  // Set the flush callback
+  lv_display_set_flush_cb(disp, example_lvgl_flush_cb);
+
+  // Set user data for panel handle
+  lv_display_set_user_data(disp, panel_handle);
+
 #ifdef EXAMPLE_Rotate_90
-  disp_drv.sw_rotate = 0;
-  disp_drv.rotated = LV_DISP_ROT_270;
+  lv_display_set_rotation(disp, LV_DISPLAY_ROTATION_270);
 #endif
-  lv_disp_t *disp = lv_disp_drv_register(&disp_drv);
 
-  static lv_indev_drv_t indev_drv;    // Input device driver (Touch)
-  lv_indev_drv_init(&indev_drv);
-  indev_drv.type = LV_INDEV_TYPE_POINTER;
-  indev_drv.disp = disp;
-  indev_drv.read_cb = example_lvgl_touch_cb;
-  lv_indev_drv_register(&indev_drv);
+  // Initialize touch input device
+  lv_indev_t *indev = lv_indev_create();
+  lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);
+  lv_indev_set_display(indev, disp);
+  lv_indev_set_read_cb(indev, example_lvgl_touch_cb);
 
   const esp_timer_create_args_t lvgl_tick_timer_args = 
   {
@@ -169,37 +171,35 @@ static void example_increase_lvgl_tick(void *arg)
 }
 static bool example_notify_lvgl_flush_ready(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx)
 {
-  lv_disp_drv_t *disp_driver = (lv_disp_drv_t *)user_ctx;
-  lv_disp_flush_ready(disp_driver);
+  lv_display_t *disp = (lv_display_t *)user_ctx;
+  lv_display_flush_ready(disp);
   return false;
 }
-static void example_lvgl_flush_cb(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_map)
+static void example_lvgl_flush_cb(lv_display_t *disp, const lv_area_t *area, uint8_t *color_map)
 {
-  esp_lcd_panel_handle_t panel_handle = (esp_lcd_panel_handle_t) drv->user_data;
-  
+  esp_lcd_panel_handle_t panel_handle = (esp_lcd_panel_handle_t) lv_display_get_user_data(disp);
+
+  // Round area to even boundaries before flushing
+  lv_area_t rounded_area = *area;
+  rounded_area.x1 &= ~0x1;
+  rounded_area.x2 |= 0x1;
+  rounded_area.y1 &= ~0x1;
+  rounded_area.y2 |= 0x1;
+
   // Calculate offsets
-  const int offsetx1 = (READ_LCD_ID == SH8601_ID) ? area->x1 : area->x1 + 0x06;
-  const int offsetx2 = (READ_LCD_ID == SH8601_ID) ? area->x2 : area->x2 + 0x06;
-  const int offsety1 = area->y1;
-  const int offsety2 = area->y2;
+  const int offsetx1 = (READ_LCD_ID == SH8601_ID) ? rounded_area.x1 : rounded_area.x1 + 0x06;
+  const int offsetx2 = (READ_LCD_ID == SH8601_ID) ? rounded_area.x2 : rounded_area.x2 + 0x06;
+  const int offsety1 = rounded_area.y1;
+  const int offsety2 = rounded_area.y2;
 
   // The draw_bitmap function takes (x_start, y_start, x_end, y_end)
-  // With the rounder above, (offsetx2 + 1) - offsetx1 will always be an even number.
-  esp_lcd_panel_draw_bitmap(panel_handle, offsetx1, offsety1, offsetx2 + 1, offsety2 + 1, color_map);
-}
-void example_lvgl_rounder_cb(struct _lv_disp_drv_t *disp_drv, lv_area_t *area)
-{
-  // Round X1 down to even, X2 up to odd (Width is even)
-  area->x1 &= ~0x1;
-  area->x2 |= 0x1;
+  // With the rounding above, (offsetx2 + 1) - offsetx1 will always be an even number.
+  esp_lcd_panel_draw_bitmap(panel_handle, offsetx1, offsety1, offsetx2 + 1, offsety2 + 1, (lv_color_t *)color_map);
 
-  // Round Y1 down to even, Y2 up to odd (Height is even)
-  // This mimics the 'height &= ~0x1UL' fix by ensuring the 
-  // total number of lines (y2 - y1 + 1) is always even.
-  area->y1 &= ~0x1;
-  area->y2 |= 0x1;
+  // Note: lv_display_flush_ready() is called by example_notify_lvgl_flush_ready() callback
+  // Do NOT call it here when using DMA with notification callback
 }
-static void example_lvgl_touch_cb(lv_indev_drv_t *drv, lv_indev_data_t *data)
+static void example_lvgl_touch_cb(lv_indev_t *drv, lv_indev_data_t *data)
 {
   uint16_t tp_x,tp_y;
   uint8_t win = getTouch(&tp_x,&tp_y);

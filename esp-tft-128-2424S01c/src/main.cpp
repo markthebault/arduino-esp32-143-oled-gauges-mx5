@@ -29,7 +29,7 @@ void my_print(lv_log_level_t level, const char *file, uint32_t line, const char 
 #endif
 
 /* Touchpad reading: Interface between LVGL and the touch driver */
-void my_touchpad_read(lv_indev_drv_t *indev_driver, lv_indev_data_t *data)
+void my_touchpad_read(lv_indev_t *indev, lv_indev_data_t *data)
 {
   bool touched;
   uint8_t gesture;
@@ -39,11 +39,11 @@ void my_touchpad_read(lv_indev_drv_t *indev_driver, lv_indev_data_t *data)
 
   if (!touched)
   {
-    data->state = LV_INDEV_STATE_REL;
+    data->state = LV_INDEV_STATE_RELEASED;
   }
   else
   {
-    data->state = LV_INDEV_STATE_PR;
+    data->state = LV_INDEV_STATE_PRESSED;
     data->point.x = touchX;
     data->point.y = touchY;
   }
@@ -82,11 +82,9 @@ void setup()
   touch.begin();
 
   /* Initialize the touch input device driver */
-  static lv_indev_drv_t indev_drv;
-  lv_indev_drv_init(&indev_drv);
-  indev_drv.type = LV_INDEV_TYPE_POINTER;
-  indev_drv.read_cb = my_touchpad_read;
-  lv_indev_drv_register(&indev_drv);
+  lv_indev_t * indev = lv_indev_create();
+  lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);
+  lv_indev_set_read_cb(indev, my_touchpad_read);
 
   // Initialize your custom gauge manager
   gauge_manager_init();
