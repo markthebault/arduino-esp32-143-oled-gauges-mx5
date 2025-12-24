@@ -112,20 +112,24 @@ static void create_bar_gauge_row(bar_gauge_t *gauge, int32_t y_pos, const char *
  * @brief Update a bar gauge with a new value
  */
 static void update_bar_gauge(bar_gauge_t *gauge, int32_t value, const char *unit) {
-    // Constrain value to range
-    if (value < (int32_t)gauge->min_value) value = (int32_t)gauge->min_value;
-    if (value > (int32_t)gauge->max_value) value = (int32_t)gauge->max_value;
+    // Store the actual value for display
+    int32_t display_value = value;
 
-    // Update bar value with animation
-    lv_bar_set_value(gauge->bar, value, LV_ANIM_ON);
+    // Constrain bar value to range (for visual indicator only)
+    int32_t bar_value = value;
+    if (bar_value < (int32_t)gauge->min_value) bar_value = (int32_t)gauge->min_value;
+    if (bar_value > (int32_t)gauge->max_value) bar_value = (int32_t)gauge->max_value;
 
-    // Update bar color based on value
-    lv_color_t color = get_color_for_value(value, gauge->zone_green, gauge->zone_orange, gauge->zone_red);
+    // Update bar value with animation (constrained to range)
+    lv_bar_set_value(gauge->bar, bar_value, LV_ANIM_ON);
+
+    // Update bar color based on constrained value
+    lv_color_t color = get_color_for_value(bar_value, gauge->zone_green, gauge->zone_orange, gauge->zone_red);
     lv_obj_set_style_bg_color(gauge->bar, color, LV_PART_INDICATOR);
 
-    // Update value label (number only)
+    // Update value label with actual value (not constrained)
     char buf[16];
-    lv_snprintf(buf, sizeof(buf), "%d", (int)value);
+    lv_snprintf(buf, sizeof(buf), "%d", (int)display_value);
     lv_label_set_text(gauge->value_label, buf);
 
     // Update unit label
@@ -208,15 +212,15 @@ static void update_pressure_bar_gauge(bar_gauge_t *gauge, float value, int32_t r
 void multi_gauge_init(void) {
     // Calculate vertical positions for three rows, centered on screen
     int32_t screen_center_y = 0;
-    int32_t row1_y = screen_center_y + MULTI_GAUGE_ROW_SPACING;
+    int32_t row1_y = screen_center_y - MULTI_GAUGE_ROW_SPACING;
     int32_t row2_y = screen_center_y;
-    int32_t row3_y = screen_center_y - MULTI_GAUGE_ROW_SPACING;
+    int32_t row3_y = screen_center_y + MULTI_GAUGE_ROW_SPACING;
 
-    // Create water temperature row (top)
+    // Create oil pressure row (top)
     create_bar_gauge_row(
-        &water_temp_bar, row1_y, WATER_SYMBOL, WATER_TEXT_LABEL,
-        WATER_TEMP_MIN, WATER_TEMP_MAX,
-        WATER_TEMP_ZONE_GREEN, WATER_TEMP_ZONE_ORANGE, WATER_TEMP_ZONE_RED
+        &oil_pressure_bar, row1_y, OIL_PRESSURE_SYMBOL, OIL_PRES_TEXT_LABEL,
+        OIL_PRESSURE_MIN, OIL_PRESSURE_MAX,
+        OIL_PRESSURE_ZONE_GREEN, OIL_PRESSURE_ZONE_ORANGE, OIL_PRESSURE_ZONE_RED
     );
 
     // Create oil temperature row (middle)
@@ -226,11 +230,11 @@ void multi_gauge_init(void) {
         OIL_TEMP_ZONE_GREEN, OIL_TEMP_ZONE_ORANGE, OIL_TEMP_ZONE_RED
     );
 
-    // Create oil pressure row (bottom)
+    // Create water temperature row (bottom)
     create_bar_gauge_row(
-        &oil_pressure_bar, row3_y, OIL_PRESSURE_SYMBOL, OIL_PRES_TEXT_LABEL,
-        OIL_PRESSURE_MIN, OIL_PRESSURE_MAX,
-        OIL_PRESSURE_ZONE_GREEN, OIL_PRESSURE_ZONE_ORANGE, OIL_PRESSURE_ZONE_RED
+        &water_temp_bar, row3_y, WATER_SYMBOL, WATER_TEXT_LABEL,
+        WATER_TEMP_MIN, WATER_TEMP_MAX,
+        WATER_TEMP_ZONE_GREEN, WATER_TEMP_ZONE_ORANGE, WATER_TEMP_ZONE_RED
     );
 }
 

@@ -69,18 +69,27 @@ void loop() {
   }
 
   // Update the current gauge if we have received data
-  // if (dataReceived) {
-  //   if (example_lvgl_lock(-1)) {
-  //     // gauge_manager_update(latestData.oilTemp, latestData.oilTemp); //TODO: Use oil temp to test
-  //     example_lvgl_unlock();
-  //   }
-  // }
+  if (dataReceived) {
+    if (example_lvgl_lock(-1)) {
+      Serial.print("DEBUG - oilTemp: ");
+      Serial.print(latestData.oilTemp);
+      Serial.print(", waterTemp: ");
+      Serial.print(latestData.waterTemp);
+      Serial.print(", oilPressure: ");
+      Serial.print(latestData.oilPressure);
+      Serial.print(", RPM: ");
+      Serial.println(latestData.engineRPM);
+      
+      gauge_manager_update(latestData.oilTemp, latestData.waterTemp, latestData.oilPressure, latestData.engineRPM);
+      example_lvgl_unlock();
+    }
+  }
 
   // This is for testing the oil temp gauge animation when ESP-NOW is not used
-  if (example_lvgl_lock(-1)) {
-    gauge_manager_update_test_animation();
-    example_lvgl_unlock();
-  }
+  // if (example_lvgl_lock(-1)) {
+  //   gauge_manager_update_test_animation();
+  //   example_lvgl_unlock();
+  // }
 
     // if (example_lvgl_lock(-1)) {
     //   gauge_manager_update(120, 80); //TODO: Use oil temp to test

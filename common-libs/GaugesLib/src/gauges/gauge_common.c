@@ -265,39 +265,47 @@ lv_obj_t* gauge_create_icon(const char *icon_symbol) {
 void gauge_update_value(gauge_state_t *state, const gauge_config_t *config, int32_t temperature) {
     if (!state || !state->arc || !state->label) return;
 
-    // Animate arc to new value
+    // Store actual temperature for display
+    int32_t display_temp = temperature;
+
+    // Constrain temperature to gauge range for arc display
+    int32_t arc_temp = temperature;
+    if (arc_temp < config->temp_min) arc_temp = config->temp_min;
+    if (arc_temp > config->temp_max) arc_temp = config->temp_max;
+
+    // Animate arc to new value (constrained)
     lv_anim_t a;
     lv_anim_init(&a);
     lv_anim_set_var(&a, state->arc);
-    lv_anim_set_values(&a, lv_arc_get_value(state->arc), temperature);
+    lv_anim_set_values(&a, lv_arc_get_value(state->arc), arc_temp);
     lv_anim_set_time(&a, GAUGE_ANIM_TIME);
     lv_anim_set_exec_cb(&a, gauge_arc_anim_cb);
     lv_anim_set_path_cb(&a, lv_anim_path_linear);
     lv_anim_start(&a);
 
-    // Set color based on temperature zones
-    if (temperature < config->zone_green) {
+    // Set color based on temperature zones (using constrained value)
+    if (arc_temp < config->zone_green) {
         lv_obj_set_style_arc_color(state->arc, COLOR_GREY, LV_PART_INDICATOR);
-    } else if (temperature < config->zone_orange) {
+    } else if (arc_temp < config->zone_orange) {
         lv_obj_set_style_arc_color(state->arc, COLOR_GREEN, LV_PART_INDICATOR);
-    } else if (temperature < config->zone_red) {
+    } else if (arc_temp < config->zone_red) {
         lv_obj_set_style_arc_color(state->arc, COLOR_AMBER, LV_PART_INDICATOR);
     } else {
         lv_obj_set_style_arc_color(state->arc, COLOR_RED, LV_PART_INDICATOR);
     }
 
-    // Handle alert animation
-    if (temperature >= config->alert_threshold && !state->is_blinking) {
+    // Handle alert animation (using actual temperature)
+    if (display_temp >= config->alert_threshold && !state->is_blinking) {
         gauge_start_blink(state);
         state->is_blinking = true;
-    } else if (temperature < config->alert_threshold && state->is_blinking) {
+    } else if (display_temp < config->alert_threshold && state->is_blinking) {
         gauge_stop_blink(state);
         state->is_blinking = false;
     }
 
-    // Update digital display
+    // Update digital display with actual temperature (not constrained)
     static char temp_text[8];
-    snprintf(temp_text, sizeof(temp_text), "%d", temperature);
+    snprintf(temp_text, sizeof(temp_text), "%d", display_temp);
     lv_label_set_text(state->label, temp_text);
 }
 
