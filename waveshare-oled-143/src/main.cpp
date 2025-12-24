@@ -3,13 +3,19 @@
 #include "gauges/gauge_manager.h"
 #include "./communication/esp_now_receiver.h"
 
-// Double-tap detection constants
-#define DOUBLE_TAP_INTERVAL_MS 500  // Maximum time between taps
-#define TAP_DEBOUNCE_MS 40         // Minimum time between taps to avoid bounce
+// Gesture event handler for swipe detection
+static void gesture_event_handler(lv_event_t * e) {
+  lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
 
-// Double-tap state
-static unsigned long last_tap_time = 0;
-static bool waiting_for_second_tap = false;
+  if (dir == LV_DIR_RIGHT) {
+    Serial.println("Swipe right detected! Switching gauge...");
+    gauge_manager_next();
+
+    // Re-attach event handler to the new screen
+    lv_obj_t *screen = lv_scr_act();
+    lv_obj_add_event_cb(screen, gesture_event_handler, LV_EVENT_GESTURE, NULL);
+  }
+}
 
 void setup() {
   Serial.begin(115200);
@@ -23,51 +29,22 @@ void setup() {
   // 2. Initialize all gauges via the gauge manager
   if (example_lvgl_lock(-1)) {
     gauge_manager_init();
+
+    // Add gesture event handler to the current screen for swipe detection
+    lv_obj_t *screen = lv_scr_act();
+    lv_obj_add_event_cb(screen, gesture_event_handler, LV_EVENT_GESTURE, NULL);
+
     example_lvgl_unlock();
   }
 
   // Note: Performance monitor is automatically created by LVGL 8 when LV_USE_PERF_MONITOR is enabled
   // Position is set by LV_USE_PERF_MONITOR_POS in lv_conf.h
 
-  // 2. Initialize ESP-NOW Receiver (Wi-Fi + ESP-NOW)
+  // 3. Initialize ESP-NOW Receiver (Wi-Fi + ESP-NOW)
   espnow_receiver_init();
 }
 
 void loop() {
-  // Check for touch input and detect double-tap
-  uint16_t touch_x, touch_y;
-  if (getTouch(&touch_x, &touch_y)) {
-    unsigned long current_time = millis();
-    unsigned long time_since_last_tap = current_time - last_tap_time;
-
-    // Check if this is a second tap within the double-tap interval
-    if (waiting_for_second_tap &&
-        time_since_last_tap >= TAP_DEBOUNCE_MS &&
-        time_since_last_tap <= DOUBLE_TAP_INTERVAL_MS) {
-
-      // Double-tap detected! Switch to next gauge
-      Serial.println("Double-tap detected! Switching gauge...");
-      if (example_lvgl_lock(-1)) {
-        gauge_manager_next();
-        example_lvgl_unlock();
-      }
-
-      waiting_for_second_tap = false;
-      last_tap_time = 0;
-    }
-    else if (time_since_last_tap >= TAP_DEBOUNCE_MS) {
-      // First tap or tap after timeout
-      waiting_for_second_tap = true;
-      last_tap_time = current_time;
-    }
-  }
-  else {
-    // No touch detected - reset double-tap if interval expired
-    if (waiting_for_second_tap && (millis() - last_tap_time) > DOUBLE_TAP_INTERVAL_MS) {
-      waiting_for_second_tap = false;
-    }
-  }
-
   // Update the current gauge if we have received data
   if (dataReceived) {
     if (example_lvgl_lock(-1)) {

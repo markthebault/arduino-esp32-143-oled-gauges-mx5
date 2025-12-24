@@ -57,8 +57,15 @@ uint8_t getTouch(uint16_t *x,uint16_t *y)
   if(data)
   {
     I2C_read_buff(I2C_ADDR_FT3168,0x03,buf,4);
-    *x = (((uint16_t)buf[0] & 0x0f)<<8) | (uint16_t)buf[1];
-    *y = (((uint16_t)buf[2] & 0x0f)<<8) | (uint16_t)buf[3];
+    uint16_t raw_x = (((uint16_t)buf[0] & 0x0f)<<8) | (uint16_t)buf[1];
+    uint16_t raw_y = (((uint16_t)buf[2] & 0x0f)<<8) | (uint16_t)buf[3];
+
+    // Apply 270° rotation transformation to match display rotation
+    // For LV_DISP_ROT_270: new_x = raw_y, new_y = (width - 1) - raw_x
+    *x = raw_y;
+    *y = (EXAMPLE_LCD_H_RES - 1) - raw_x;
+
+    // Clamp to display bounds
     if(*x > EXAMPLE_LCD_H_RES)
     *x = EXAMPLE_LCD_H_RES;
     if(*y > EXAMPLE_LCD_V_RES)
