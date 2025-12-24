@@ -12,6 +12,12 @@ void setup() {
   Touch_Init();
   lcd_lvgl_Init();
 
+  // Set brightness (0-255)
+  lcd_set_brightness(0xFF);  // Maximum brightness (100%)
+  // lcd_set_brightness(0x80);  // Medium brightness (50%)
+  // lcd_set_brightness(0x40);  // Low brightness (25%)
+  // lcd_set_brightness(0x00);  // Minimum brightness (off)
+
   // 2. Initialize all gauges via the gauge manager
   if (example_lvgl_lock(-1)) {
     gauge_manager_init();

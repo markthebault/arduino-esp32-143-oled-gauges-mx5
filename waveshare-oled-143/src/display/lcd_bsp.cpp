@@ -11,7 +11,8 @@ static SemaphoreHandle_t lvgl_mux = NULL; //mutex semaphores
 #define EXAMPLE_Rotate_90
 #define SH8601_ID 0x86
 #define CO5300_ID 0xff
-static uint8_t READ_LCD_ID = 0x00; 
+static uint8_t READ_LCD_ID = 0x00;
+static esp_lcd_panel_io_handle_t g_io_handle = NULL; // Global panel I/O handle for brightness control 
 
 static const sh8601_lcd_init_cmd_t sh8601_lcd_init_cmds[] = 
 {
@@ -67,6 +68,7 @@ void lcd_lvgl_Init(void)
     },
   };
   ESP_ERROR_CHECK_WITHOUT_ABORT(esp_lcd_new_panel_io_spi((esp_lcd_spi_bus_handle_t)LCD_HOST, &io_config, &io_handle));
+  g_io_handle = io_handle; // Store globally for brightness control
   esp_lcd_panel_handle_t panel_handle = NULL;
   const esp_lcd_panel_dev_config_t panel_config = 
   {
@@ -211,5 +213,23 @@ static void example_lvgl_touch_cb(lv_indev_drv_t *drv, lv_indev_data_t *data)
   {
     data->state = LV_INDEV_STATE_RELEASED;
   }
+}
+
+void lcd_set_brightness(uint8_t brightness)
+{
+  if (g_io_handle == NULL) {
+    return; // Not initialized yet
+  }
+
+  // Format command for QSPI interface
+  // The display uses QSPI, so we need to encode the command properly
+  #define LCD_OPCODE_WRITE_CMD (0x02ULL)
+  int lcd_cmd = 0x51; // MIPI DCS command: Write Display Brightness
+  lcd_cmd &= 0xff;
+  lcd_cmd <<= 8;
+  lcd_cmd |= LCD_OPCODE_WRITE_CMD << 24;
+
+  // Send command with brightness value (0x00 = min, 0xFF = max)
+  esp_lcd_panel_io_tx_param(g_io_handle, lcd_cmd, &brightness, 1);
 }
 
