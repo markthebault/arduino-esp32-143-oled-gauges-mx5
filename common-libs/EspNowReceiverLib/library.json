@@ -1,0 +1,16 @@
+{
+  "name": "EspNowReceiverLib",
+  "version": "1.0.0",
+  "description": "Common library for ESP-NOW receiver functionality used across ESP32 projects",
+  "keywords": ["esp-now", "communication", "wireless", "esp32"],
+  "authors": [
+    {
+      "name": "Mark Thebault"
+    }
+  ],
+  "repository": {
+    "type": "git"
+  },
+  "frameworks": ["arduino", "espidf"],
+  "platforms": ["espressif32"]
+}

@@ -1,7 +1,7 @@
 #include "./display/lcd_bsp.h"
 #include "./touch/FT3168.h"
 #include "gauges/gauge_manager.h"
-#include "./communication/esp_now_receiver.h"
+#include <esp_now_receiver.h>
 
 void setup() {
   Serial.begin(115200);

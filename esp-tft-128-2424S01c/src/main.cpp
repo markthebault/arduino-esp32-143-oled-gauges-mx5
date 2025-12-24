@@ -7,6 +7,7 @@
 #include "CST816D.h"
 
 #include "gauges/gauge_manager.h"
+#include <esp_now_receiver.h>
 
 // Hardware Pin Definitions
 #define I2C_SDA 4
@@ -15,7 +16,7 @@
 #define TP_RST 1
 
 #define off_pin 35
-#define buf_size 100
+#define buf_size 40
 
 // LovyanGFX Configuration Class
 class LGFX : public lgfx::LGFX_Device
@@ -147,6 +148,7 @@ void setup()
   digitalWrite(3, HIGH);
   
   Serial.begin(115200); 
+  delay(2000); // Give serial time to start
   Serial.println("I am LVGL_Arduino");
 
   ticker.attach(1, tcr1s); // Print memory status every 1 second
@@ -182,6 +184,9 @@ void setup()
 
   // Initialize your custom gauge manager
   gauge_manager_init();
+  gauge_manager_enable_gestures();
+
+  espnow_receiver_init();
 
   // Note: Performance monitor is automatically created by LVGL 8 when LV_USE_PERF_MONITOR is enabled
   // Position is set by LV_USE_PERF_MONITOR_POS in lv_conf.h
@@ -193,7 +198,21 @@ void loop()
 {
   lv_timer_handler(); /* Process LVGL timers and GUI updates */
 
-  gauge_manager_update_test_animation(); // Update gauge values with test animation
-  
+  if (dataReceived) {
+    Serial.print("DEBUG - oilTemp: ");
+    Serial.print(latestData.oilTemp);
+    Serial.print(", waterTemp: ");
+    Serial.print(latestData.waterTemp);
+    Serial.print(", oilPressure: ");
+    Serial.print(latestData.oilPressure);
+    Serial.print(", RPM: ");
+    Serial.println(latestData.engineRPM);
+
+    gauge_manager_update(latestData.oilTemp, latestData.waterTemp, latestData.oilPressure, latestData.engineRPM);
+  }
+
+  // Uncomment for testing without ESP-NOW
+  // gauge_manager_update_test_animation(); // Update gauge values with test animation
+
   delay(70); // Small delay to prevent hogging CPU
 }
