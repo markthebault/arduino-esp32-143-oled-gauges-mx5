@@ -90,11 +90,11 @@ lv_obj_t* needle_gauge_create_meter(const needle_gauge_config_t *config, needle_
     int32_t minor_tick_count;
     if (config->decimal_places > 0) {
         // For pressure (0-8 bar): 16 minor ticks (one every 0.5 bar)
-        minor_tick_count = range * 2 + 1;
+        minor_tick_count = range * NEEDLE_MINOR_TICK_MULTIPLIER + 1;
     } else {
         // For temperature: depends on range
         // For 60-160: 100 units = ~50 ticks (one every 2 units)
-        minor_tick_count = range / 2 + 1;
+        minor_tick_count = range / NEEDLE_MINOR_TICK_DIVISOR + 1;
     }
 
     // Calculate tick spacing for major ticks
@@ -111,24 +111,24 @@ lv_obj_t* needle_gauge_create_meter(const needle_gauge_config_t *config, needle_
     // Minor ticks (gray for normal zone, dark red for red zone)
     lv_meter_set_scale_ticks(meter, scale,
                             minor_tick_count,
-                            1,
-                            (int)(8 * GAUGE_SCALE),
-                            lv_color_hex(0x666666));
+                            NEEDLE_MINOR_TICK_WIDTH,
+                            NEEDLE_MINOR_TICK_LENGTH,
+                            NEEDLE_MINOR_TICK_COLOR);
 
     // Major ticks with labels (white)
     lv_meter_set_scale_major_ticks(meter, scale,
                                    ticks_between_major,
-                                   3,
-                                   (int)(18 * GAUGE_SCALE),
+                                   NEEDLE_MAJOR_TICK_WIDTH,
+                                   NEEDLE_MAJOR_TICK_LENGTH,
                                    COLOR_WHITE,
-                                   (int)(29 * GAUGE_SCALE));
+                                   NEEDLE_MAJOR_TICK_LABEL_DIST);
 
     // Add a red arc in the background to indicate the red zone
     lv_meter_indicator_t *red_zone_arc = lv_meter_add_arc(
         meter, scale,
-        (int)(8 * GAUGE_SCALE),   // width
-        COLOR_RED,                 // color
-        (int)(-15 * GAUGE_SCALE)); // negative offset to place behind ticks
+        NEEDLE_RED_ZONE_WIDTH,    // width
+        COLOR_RED,                // color
+        NEEDLE_RED_ZONE_OFFSET);  // negative offset to place behind ticks
     lv_meter_set_indicator_start_value(meter, red_zone_arc, (int32_t)config->zone_red);
     lv_meter_set_indicator_end_value(meter, red_zone_arc, (int32_t)config->value_max);
 
@@ -137,17 +137,17 @@ lv_obj_t* needle_gauge_create_meter(const needle_gauge_config_t *config, needle_
         meter, scale,
         NEEDLE_WIDTH,           // width
         COLOR_AMBER,            // color
-        (int)(-20 * GAUGE_SCALE) // offset to reach end of scale
+        NEEDLE_OFFSET           // offset to reach end of scale
     );
 
     // Create center knob decoration
     lv_obj_t *center_knob = lv_obj_create(meter);
     lv_obj_set_size(center_knob, NEEDLE_CENTER_SIZE, NEEDLE_CENTER_SIZE);
     lv_obj_center(center_knob);
-    lv_obj_set_style_bg_color(center_knob, lv_color_hex(0x151515), 0);
+    lv_obj_set_style_bg_color(center_knob, NEEDLE_CENTER_BG_COLOR, 0);
     lv_obj_set_style_radius(center_knob, LV_RADIUS_CIRCLE, 0);
-    lv_obj_set_style_border_color(center_knob, lv_color_hex(0x444444), 0);
-    lv_obj_set_style_border_width(center_knob, 2, 0);
+    lv_obj_set_style_border_color(center_knob, NEEDLE_CENTER_BORDER_COLOR, 0);
+    lv_obj_set_style_border_width(center_knob, NEEDLE_CENTER_BORDER_WIDTH, 0);
 
     // Store in state
     state->meter = meter;
@@ -180,8 +180,8 @@ lv_obj_t* needle_gauge_create_value_label(const needle_gauge_config_t *config) {
 
     // Position in bottom right area, closer to center
     lv_obj_align(value_label, LV_ALIGN_CENTER,
-                (int)(100 * GAUGE_SCALE),
-                (int)(100 * GAUGE_SCALE));
+                NEEDLE_VALUE_LABEL_X_OFFSET,
+                NEEDLE_VALUE_LABEL_Y_OFFSET);
 
     return value_label;
 }
@@ -206,8 +206,8 @@ lv_obj_t* needle_gauge_create_unit_label(const needle_gauge_config_t *config) {
 
     // Position next to value label (will be adjusted after value is set)
     lv_obj_align(unit_label, LV_ALIGN_CENTER,
-                (int)(140 * GAUGE_SCALE),
-                (int)(100 * GAUGE_SCALE));
+                NEEDLE_UNIT_LABEL_X_OFFSET,
+                NEEDLE_UNIT_LABEL_Y_OFFSET);
 
     return unit_label;
 }
@@ -241,10 +241,10 @@ lv_obj_t* needle_gauge_create_icon_label(const needle_gauge_config_t *config) {
     lv_obj_add_style(icon_label, &style_icon, 0);
 
     // Position at top of meter gauge
-    int padding_offset_value = (int)15 / 2;
+    int padding_offset_value = (int)15 / NEEDLE_ICON_PADDING_DIVISOR;
     lv_obj_align(icon_label, LV_ALIGN_CENTER,
                 padding_offset_value,
-                (int)(-80 * GAUGE_SCALE));
+                NEEDLE_ICON_Y_OFFSET);
 
     return icon_label;
 }

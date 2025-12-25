@@ -139,16 +139,90 @@ extern "C" {
 #define OIL_PRESSURE_ALERT_HIGH       7.0f    // Alert when pressure too high
 
 // ============================================================================
+// NEEDLE GAUGE CONFIGURATION
+// ============================================================================
+
+// Minor tick calculation
+#define NEEDLE_MINOR_TICK_MULTIPLIER    2       // Multiplier for pressure gauges (decimal places)
+#define NEEDLE_MINOR_TICK_DIVISOR       10      // Divisor for temperature gauges (integer)
+
+// Tick styling (scaled)
+#define NEEDLE_MINOR_TICK_LENGTH        ((int)(8 * GAUGE_SCALE))
+#define NEEDLE_MINOR_TICK_WIDTH         1
+#define NEEDLE_MINOR_TICK_COLOR         lv_color_hex(0x666666)  // Gray
+
+#define NEEDLE_MAJOR_TICK_WIDTH         3
+#define NEEDLE_MAJOR_TICK_LENGTH        ((int)(18 * GAUGE_SCALE))
+#define NEEDLE_MAJOR_TICK_LABEL_DIST    ((int)(29 * GAUGE_SCALE))
+
+// Red zone arc styling (scaled)
+#define NEEDLE_RED_ZONE_WIDTH           ((int)(8 * GAUGE_SCALE))
+#define NEEDLE_RED_ZONE_OFFSET          ((int)(-15 * GAUGE_SCALE))
+
+// Needle styling (scaled)
+#define NEEDLE_OFFSET                   ((int)(-20 * GAUGE_SCALE))
+
+// Center knob styling (scaled)
+#define NEEDLE_CENTER_BG_COLOR          lv_color_hex(0x151515)
+#define NEEDLE_CENTER_BORDER_COLOR      lv_color_hex(0x444444)
+#define NEEDLE_CENTER_BORDER_WIDTH      2
+
+// Label positioning (scaled)
+#define NEEDLE_VALUE_LABEL_X_OFFSET     ((int)(100 * GAUGE_SCALE))
+#define NEEDLE_VALUE_LABEL_Y_OFFSET     ((int)(100 * GAUGE_SCALE))
+#define NEEDLE_UNIT_LABEL_X_OFFSET      ((int)(140 * GAUGE_SCALE))
+#define NEEDLE_UNIT_LABEL_Y_OFFSET      ((int)(100 * GAUGE_SCALE))
+#define NEEDLE_ICON_PADDING_DIVISOR     2       // Used for: (int)15 / NEEDLE_ICON_PADDING_DIVISOR
+#define NEEDLE_ICON_Y_OFFSET            ((int)(-80 * GAUGE_SCALE))
+
+// ============================================================================
+// ARC GAUGE CONFIGURATION
+// ============================================================================
+
+// Marker sizing multipliers
+#define ARC_MARKER_SIZE_MULTIPLIER      4       // Used for: LINE_WIDTH * 4
+#define ARC_ANGLE_OFFSET_START          2       // Arc start angle adjustment
+#define ARC_ANGLE_OFFSET_END            1       // Arc end angle adjustment
+#define ARC_MARKER_ANGLE_OFFSET         1       // Marker angle offset
+
+// Border sizing multipliers
+#define ARC_BORDER_WIDTH_MULTIPLIER     2       // For: ARC_WIDTH * 2
+#define ARC_BORDER_LINE_MULTIPLIER      2       // For: LINE_WIDTH * 2
+
+// Math constants
+#define MATH_PI                         3.14159f
+#define DEGREES_TO_RADIANS              180.0f
+
+// Redline styling
+#define ARC_REDLINE_WIDTH_MULTIPLIER    2       // For: LINE_WIDTH * 2
+
+// ============================================================================
 // MULTI GAUGE BAR CONFIGURATION
 // ============================================================================
 
-#define MULTI_GAUGE_LEFT_PADDING    ((int)(30 * GAUGE_SCALE))  // Left edge padding
-#define MULTI_GAUGE_BAR_WIDTH       ((int)(185 * GAUGE_SCALE))
-#define MULTI_GAUGE_BAR_HEIGHT      ((int)(40 * GAUGE_SCALE))
-#define MULTI_GAUGE_ROW_SPACING     ((int)(85 * GAUGE_SCALE))
-#define MULTI_GAUGE_ICON_SIZE       ((int)(48 * GAUGE_SCALE))
-#define MULTI_GAUGE_VALUE_WIDTH     ((int)(110 * GAUGE_SCALE))
-#define MULTI_GAUGE_ICON_BAR_GAP    ((int)(100 * GAUGE_SCALE))  // Gap between icon and bar start
+#define MULTI_GAUGE_LEFT_PADDING        ((int)(30 * GAUGE_SCALE))  // Left edge padding
+#define MULTI_GAUGE_BAR_WIDTH           ((int)(185 * GAUGE_SCALE))
+#define MULTI_GAUGE_BAR_HEIGHT          ((int)(40 * GAUGE_SCALE))
+#define MULTI_GAUGE_ROW_SPACING         ((int)(85 * GAUGE_SCALE))
+#define MULTI_GAUGE_ICON_SIZE           ((int)(48 * GAUGE_SCALE))
+#define MULTI_GAUGE_VALUE_WIDTH         ((int)(110 * GAUGE_SCALE))
+#define MULTI_GAUGE_ICON_BAR_GAP        ((int)(100 * GAUGE_SCALE))  // Gap between icon and bar start
+
+// Bar styling
+#define MULTI_GAUGE_BAR_BG_COLOR        lv_color_hex(0x1A1A1A)
+#define MULTI_GAUGE_BAR_BORDER_WIDTH    ((int)(2 * GAUGE_SCALE))
+#define MULTI_GAUGE_BAR_RADIUS          ((int)(4 * GAUGE_SCALE))
+#define MULTI_GAUGE_INDICATOR_RADIUS    ((int)(2 * GAUGE_SCALE))
+
+// Label spacing
+#define MULTI_GAUGE_VALUE_X_OFFSET      ((int)(25 * GAUGE_SCALE))
+#define MULTI_GAUGE_UNIT_SPACING        ((int)(3 * GAUGE_SCALE))
+
+// Oil pressure calculation constants
+#define OIL_PRESSURE_RPM_DIVISOR        2000.0f  // Pressure = RPM / 2000
+#define OIL_PRESSURE_MIN_IDLE           0.5f     // Minimum pressure at idle (bar)
+#define OIL_PRESSURE_RESOLUTION_MULT    10.0f    // Multiplier for bar resolution
+#define OIL_PRESSURE_DECIMAL_MULT       10       // For decimal place calculation
 
 // ============================================================================
 // DEFAULT GAUGE SELECTION

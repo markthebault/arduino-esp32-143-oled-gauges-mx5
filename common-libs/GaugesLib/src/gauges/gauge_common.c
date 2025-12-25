@@ -71,16 +71,17 @@ float gauge_calc_marker_gap(int32_t temp_min, int32_t temp_max, int32_t marker_i
 }
 
 static void position_marker(lv_obj_t *marker, int position, float marker_gap) {
-    lv_obj_set_size(marker, ARC_SIZE + (LINE_WIDTH * 4), ARC_SIZE + (LINE_WIDTH * 4));
+    lv_obj_set_size(marker, ARC_SIZE + (LINE_WIDTH * ARC_MARKER_SIZE_MULTIPLIER),
+                    ARC_SIZE + (LINE_WIDTH * ARC_MARKER_SIZE_MULTIPLIER));
     lv_obj_align(marker, LV_ALIGN_CENTER, 0, 0);
 
-    lv_obj_set_style_arc_width(marker, ARC_WIDTH + (LINE_WIDTH * 4), LV_PART_MAIN);
+    lv_obj_set_style_arc_width(marker, ARC_WIDTH + (LINE_WIDTH * ARC_MARKER_SIZE_MULTIPLIER), LV_PART_MAIN);
     lv_obj_set_style_arc_rounded(marker, false, LV_PART_MAIN);
     lv_obj_set_style_arc_color(marker, COLOR_WHITE, LV_PART_MAIN);
 
     lv_arc_set_bg_angles(marker,
                         ARC_START_ANGLE + (position * marker_gap),
-                        ARC_START_ANGLE + (position * marker_gap) + 1);
+                        ARC_START_ANGLE + (position * marker_gap) + ARC_MARKER_ANGLE_OFFSET);
 
     lv_obj_remove_style(marker, NULL, LV_PART_KNOB);
     lv_obj_remove_style(marker, NULL, LV_PART_INDICATOR);
@@ -105,7 +106,7 @@ lv_obj_t* gauge_create_arc(const gauge_config_t *config) {
 
     lv_obj_set_size(arc, ARC_SIZE, ARC_SIZE);
     lv_obj_align(arc, LV_ALIGN_CENTER, 0, 0);
-    lv_arc_set_bg_angles(arc, ARC_START_ANGLE + 2, ARC_END_ANGLE - 1);
+    lv_arc_set_bg_angles(arc, ARC_START_ANGLE + ARC_ANGLE_OFFSET_START, ARC_END_ANGLE - ARC_ANGLE_OFFSET_END);
 
     lv_obj_set_style_arc_color(arc, COLOR_BLACK, LV_PART_MAIN);
     lv_obj_set_style_arc_color(arc, COLOR_AMBER, LV_PART_INDICATOR);
@@ -125,8 +126,8 @@ void gauge_create_border_and_markers(const gauge_config_t *config) {
     lv_obj_t *border = lv_arc_create(lv_scr_act());
 
     lv_obj_set_size(border,
-                    ARC_SIZE - (ARC_WIDTH * 2) - (LINE_WIDTH * 2),
-                    ARC_SIZE - (ARC_WIDTH * 2) - (LINE_WIDTH * 2));
+                    ARC_SIZE - (ARC_WIDTH * ARC_BORDER_WIDTH_MULTIPLIER) - (LINE_WIDTH * ARC_BORDER_LINE_MULTIPLIER),
+                    ARC_SIZE - (ARC_WIDTH * ARC_BORDER_WIDTH_MULTIPLIER) - (LINE_WIDTH * ARC_BORDER_LINE_MULTIPLIER));
     lv_obj_align(border, LV_ALIGN_CENTER, 0, 0);
     lv_arc_set_bg_angles(border, ARC_START_ANGLE, ARC_END_ANGLE);
 
@@ -156,7 +157,7 @@ void gauge_create_border_and_markers(const gauge_config_t *config) {
 
         // Calculate label position
         int temp_value = config->temp_min + (i * config->marker_interval);
-        float angle_rad = (ARC_START_ANGLE + (i * marker_gap)) * 3.14159f / 180.0f;
+        float angle_rad = (ARC_START_ANGLE + (i * marker_gap)) * MATH_PI / DEGREES_TO_RADIANS;
         int radius = (ARC_SIZE / 2) - ARC_WIDTH - MARKER_LABEL_OFFSET;
         int label_x = (int)(radius * cosf(angle_rad));
         int label_y = (int)(radius * sinf(angle_rad));
@@ -196,7 +197,7 @@ void gauge_create_redline(const gauge_config_t *config) {
 
     lv_obj_set_style_arc_color(redline, COLOR_RED, LV_PART_MAIN);
     lv_obj_set_style_arc_rounded(redline, false, LV_PART_MAIN);
-    lv_obj_set_style_arc_width(redline, LINE_WIDTH * 2, LV_PART_MAIN);
+    lv_obj_set_style_arc_width(redline, LINE_WIDTH * ARC_REDLINE_WIDTH_MULTIPLIER, LV_PART_MAIN);
 
     lv_obj_remove_style(redline, NULL, LV_PART_KNOB);
     lv_obj_remove_style(redline, NULL, LV_PART_INDICATOR);

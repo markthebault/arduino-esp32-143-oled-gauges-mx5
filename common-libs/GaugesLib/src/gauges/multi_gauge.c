@@ -78,10 +78,10 @@ static void create_bar_gauge_row(bar_gauge_t *gauge, int32_t y_pos, const char *
     lv_obj_align(gauge->bar, LV_ALIGN_LEFT_MID, MULTI_GAUGE_LEFT_PADDING + MULTI_GAUGE_ICON_BAR_GAP, y_pos);
 
     // Style the bar
-    lv_obj_set_style_bg_color(gauge->bar, lv_color_hex(0x1A1A1A), LV_PART_MAIN);
-    lv_obj_set_style_border_width(gauge->bar, (int)(2 * GAUGE_SCALE), LV_PART_MAIN);
+    lv_obj_set_style_bg_color(gauge->bar, MULTI_GAUGE_BAR_BG_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_border_width(gauge->bar, MULTI_GAUGE_BAR_BORDER_WIDTH, LV_PART_MAIN);
     lv_obj_set_style_border_color(gauge->bar, COLOR_GREY, LV_PART_MAIN);
-    lv_obj_set_style_radius(gauge->bar, (int)(4 * GAUGE_SCALE), LV_PART_MAIN);
+    lv_obj_set_style_radius(gauge->bar, MULTI_GAUGE_BAR_RADIUS, LV_PART_MAIN);
 
     // Set bar range (cast to int32_t for LVGL)
     lv_bar_set_range(gauge->bar, (int32_t)min_val, (int32_t)max_val);
@@ -89,7 +89,7 @@ static void create_bar_gauge_row(bar_gauge_t *gauge, int32_t y_pos, const char *
 
     // Style the indicator (the filled part)
     lv_obj_set_style_bg_color(gauge->bar, COLOR_GREEN, LV_PART_INDICATOR);
-    lv_obj_set_style_radius(gauge->bar, (int)(2 * GAUGE_SCALE), LV_PART_INDICATOR);
+    lv_obj_set_style_radius(gauge->bar, MULTI_GAUGE_INDICATOR_RADIUS, LV_PART_INDICATOR);
 
     // Create value label (numeric value only)
     gauge->value_label = lv_label_create(lv_scr_act());
@@ -97,7 +97,7 @@ static void create_bar_gauge_row(bar_gauge_t *gauge, int32_t y_pos, const char *
     lv_obj_set_style_text_color(gauge->value_label, COLOR_WHITE, 0);
     lv_obj_set_style_text_font(gauge->value_label, FONT_TEMP_UNIT, 0);  // Larger font for number
     lv_obj_align(gauge->value_label, LV_ALIGN_LEFT_MID,
-                 MULTI_GAUGE_LEFT_PADDING + MULTI_GAUGE_ICON_BAR_GAP + MULTI_GAUGE_BAR_WIDTH + (int)(25 * GAUGE_SCALE),
+                 MULTI_GAUGE_LEFT_PADDING + MULTI_GAUGE_ICON_BAR_GAP + MULTI_GAUGE_BAR_WIDTH + MULTI_GAUGE_VALUE_X_OFFSET,
                  y_pos);
 
     // Create unit label (smaller font for units)
@@ -136,7 +136,7 @@ static void update_bar_gauge(bar_gauge_t *gauge, int32_t value, const char *unit
     lv_label_set_text(gauge->unit_label, unit);
 
     // Position unit label to the right of value label
-    lv_obj_align_to(gauge->unit_label, gauge->value_label, LV_ALIGN_OUT_RIGHT_MID, (int)(3 * GAUGE_SCALE), 0);
+    lv_obj_align_to(gauge->unit_label, gauge->value_label, LV_ALIGN_OUT_RIGHT_MID, MULTI_GAUGE_UNIT_SPACING, 0);
 }
 
 /**
@@ -152,11 +152,11 @@ static void update_bar_gauge(bar_gauge_t *gauge, int32_t value, const char *unit
  */
 static float calculate_min_oil_pressure(int32_t rpm) {
     // Conservative formula: 0.5 bar per 1000 RPM
-    float min_pressure = (float)rpm / 2000.0f;
+    float min_pressure = (float)rpm / OIL_PRESSURE_RPM_DIVISOR;
 
     // Ensure minimum of 0.5 bar at idle
-    if (min_pressure < 0.5f) {
-        min_pressure = 0.5f;
+    if (min_pressure < OIL_PRESSURE_MIN_IDLE) {
+        min_pressure = OIL_PRESSURE_MIN_IDLE;
     }
 
     return min_pressure;
@@ -171,8 +171,8 @@ static void update_pressure_bar_gauge(bar_gauge_t *gauge, float value, int32_t r
     if (value > gauge->max_value) value = gauge->max_value;
 
     // Update bar value with animation (convert float to int for bar)
-    int32_t bar_value = (int32_t)(value * 10.0f); // Scale for better resolution
-    int32_t bar_max = (int32_t)(gauge->max_value * 10.0f);
+    int32_t bar_value = (int32_t)(value * OIL_PRESSURE_RESOLUTION_MULT); // Scale for better resolution
+    int32_t bar_max = (int32_t)(gauge->max_value * OIL_PRESSURE_RESOLUTION_MULT);
     lv_bar_set_range(gauge->bar, 0, bar_max);
     lv_bar_set_value(gauge->bar, bar_value, LV_ANIM_ON);
 
@@ -195,14 +195,14 @@ static void update_pressure_bar_gauge(bar_gauge_t *gauge, float value, int32_t r
 
     // Update value label with one decimal place (number only)
     char buf[16];
-    lv_snprintf(buf, sizeof(buf), "%d.%d", (int)value, (int)((value - (int)value) * 10));
+    lv_snprintf(buf, sizeof(buf), "%d.%d", (int)value, (int)((value - (int)value) * OIL_PRESSURE_DECIMAL_MULT));
     lv_label_set_text(gauge->value_label, buf);
 
     // Update unit label
     lv_label_set_text(gauge->unit_label, "bar");
 
     // Position unit label to the right of value label
-    lv_obj_align_to(gauge->unit_label, gauge->value_label, LV_ALIGN_OUT_RIGHT_MID, (int)(3 * GAUGE_SCALE), 0);
+    lv_obj_align_to(gauge->unit_label, gauge->value_label, LV_ALIGN_OUT_RIGHT_MID, MULTI_GAUGE_UNIT_SPACING, 0);
 }
 
 // ============================================================================
