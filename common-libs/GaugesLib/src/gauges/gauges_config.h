@@ -116,8 +116,8 @@ extern "C" {
 // WATER TEMPERATURE GAUGE CONFIGURATION
 // ============================================================================
 
-#define WATER_TEMP_MIN              60
-#define WATER_TEMP_MAX              140
+#define WATER_TEMP_MIN              50
+#define WATER_TEMP_MAX              130
 #define WATER_TEMP_ZONE_GREEN       80
 #define WATER_TEMP_ZONE_ORANGE      105
 #define WATER_TEMP_ZONE_RED         110
@@ -141,6 +141,17 @@ extern "C" {
 // ============================================================================
 // NEEDLE GAUGE CONFIGURATION
 // ============================================================================
+
+// Meter size (slightly smaller than screen to add padding)
+#define NEEDLE_METER_SIZE        (GAUGE_DIMENSION - (int)(30 * GAUGE_SCALE))
+#define NEEDLE_WIDTH             ((int)(5 * GAUGE_SCALE))
+#define NEEDLE_CENTER_SIZE       (NEEDLE_METER_SIZE / 10)
+
+// Needle angle range: Start at very bottom (6 o'clock) and sweep 270° clockwise
+// In LVGL meter, angles are: 0°=right, 90°=bottom, 180°=left, 270°=top
+// We want: min at 90° (bottom), max at 360° (or 0°, which is 270° from 90°)
+#define NEEDLE_ANGLE_START  135   // Start angle (6 o'clock, very bottom)
+#define NEEDLE_ANGLE_RANGE  270  // 270° sweep clockwise to 9 o'clock (left side)
 
 // Minor tick calculation
 #define NEEDLE_MINOR_TICK_MULTIPLIER    2       // Multiplier for pressure gauges (decimal places)
@@ -168,8 +179,8 @@ extern "C" {
 #define NEEDLE_CENTER_BORDER_WIDTH      2
 
 // Label positioning (scaled)
-#define NEEDLE_VALUE_LABEL_X_OFFSET     ((int)(100 * GAUGE_SCALE))
-#define NEEDLE_VALUE_LABEL_Y_OFFSET     ((int)(100 * GAUGE_SCALE))
+#define NEEDLE_VALUE_LABEL_X_OFFSET     ((int)(15/2 * GAUGE_SCALE))
+#define NEEDLE_VALUE_LABEL_Y_OFFSET     ((int)(160 * GAUGE_SCALE))
 #define NEEDLE_UNIT_LABEL_X_OFFSET      ((int)(140 * GAUGE_SCALE))
 #define NEEDLE_UNIT_LABEL_Y_OFFSET      ((int)(100 * GAUGE_SCALE))
 #define NEEDLE_ICON_PADDING_DIVISOR     2       // Used for: (int)15 / NEEDLE_ICON_PADDING_DIVISOR

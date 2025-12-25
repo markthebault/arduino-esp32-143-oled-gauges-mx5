@@ -57,21 +57,6 @@ typedef struct {
 } needle_gauge_state_t;
 
 // ============================================================================
-// NEEDLE GAUGE DIMENSIONS
-// ============================================================================
-
-// Meter size (slightly smaller than screen to add padding)
-#define NEEDLE_METER_SIZE        (GAUGE_DIMENSION - (int)(30 * GAUGE_SCALE))
-#define NEEDLE_WIDTH             ((int)(5 * GAUGE_SCALE))
-#define NEEDLE_CENTER_SIZE       (NEEDLE_METER_SIZE / 10)
-
-// Needle angle range: Start at very bottom (6 o'clock) and sweep 270° clockwise
-// In LVGL meter, angles are: 0°=right, 90°=bottom, 180°=left, 270°=top
-// We want: min at 90° (bottom), max at 360° (or 0°, which is 270° from 90°)
-#define NEEDLE_ANGLE_START  90   // Start angle (6 o'clock, very bottom)
-#define NEEDLE_ANGLE_RANGE  270  // 270° sweep clockwise to 9 o'clock (left side)
-
-// ============================================================================
 // ANIMATION CALLBACKS
 // ============================================================================
 
