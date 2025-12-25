@@ -167,8 +167,8 @@ extern "C" {
 #define NEEDLE_MAJOR_TICK_LABEL_DIST    ((int)(29 * GAUGE_SCALE))
 
 // Red zone arc styling (scaled)
-#define NEEDLE_RED_ZONE_WIDTH           ((int)(8 * GAUGE_SCALE))
-#define NEEDLE_RED_ZONE_OFFSET          ((int)(-10 * GAUGE_SCALE))
+#define NEEDLE_RED_ZONE_WIDTH           ((int)(18 * GAUGE_SCALE))
+#define NEEDLE_RED_ZONE_OFFSET          ((int)(0 * GAUGE_SCALE))
 
 // Needle styling (scaled)
 #define NEEDLE_OFFSET                   ((int)(-20 * GAUGE_SCALE))
