@@ -11,6 +11,11 @@ extern "C" {
     #include "../fonts/montserrat_bold_numbers_120.h"
 #endif
 
+// Include needle gauge value font (used for needle gauge value labels)
+#ifdef USE_SCREEN_466PX
+    #include "../fonts/montserrat_bold_80.h"
+#endif
+
 #if USE_CUSTOM_ICON_FONT
     #ifdef USE_SCREEN_466PX
         #include "../fonts/fa_icons_54.h"

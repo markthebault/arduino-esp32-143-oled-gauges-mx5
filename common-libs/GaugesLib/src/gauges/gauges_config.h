@@ -27,11 +27,13 @@ extern "C" {
     // Fonts for 466px display (using custom fonts)
     // Custom font declarations (defined in gauge_common.c)
     extern const lv_font_t montserrat_bold_numbers_120;
+    extern const lv_font_t montserrat_bold_80;
     extern const lv_font_t fa_icons_54;
-    #define FONT_TEMP_MAIN   &montserrat_bold_numbers_120  // Main temperature number (120px)
-    #define FONT_TEMP_UNIT   &lv_font_montserrat_48       // °C unit (48px)
-    #define FONT_MARKERS     &lv_font_montserrat_24       // Gauge markers (24px)
-    #define FONT_ICON        &fa_icons_54                 // Bottom icon (54px)
+    #define FONT_TEMP_MAIN          &montserrat_bold_numbers_120  // Main temperature number (120px)
+    #define FONT_TEMP_UNIT          &lv_font_montserrat_48        // °C unit (48px)
+    #define FONT_MARKERS            &lv_font_montserrat_24        // Gauge markers (24px)
+    #define FONT_ICON               &fa_icons_54                  // Bottom icon (54px)
+    #define FONT_NEEDLE_VALUE       &montserrat_bold_80           // Needle gauge value label (80px)
     #define USE_CUSTOM_TEMP_FONT 1
     #define USE_CUSTOM_ICON_FONT 1
 #endif
@@ -43,10 +45,11 @@ extern "C" {
     // Fonts for 240px display (using LVGL built-in fonts)
     // Note: For optimal display, consider generating custom fonts at scaled sizes
     extern const lv_font_t fa_icons_32;
-    #define FONT_TEMP_MAIN   &lv_font_montserrat_48     // Main temperature number (scaled from 120px)
-    #define FONT_TEMP_UNIT   &lv_font_montserrat_24     // °C unit (scaled from 48px)
-    #define FONT_MARKERS     &lv_font_montserrat_14     // Gauge markers (scaled from 24px)
-    #define FONT_ICON        &fa_icons_32            // Bottom icon (scaled from 54px)
+    #define FONT_TEMP_MAIN          &lv_font_montserrat_48     // Main temperature number (scaled from 120px)
+    #define FONT_TEMP_UNIT          &lv_font_montserrat_24     // °C unit (scaled from 48px)
+    #define FONT_MARKERS            &lv_font_montserrat_14     // Gauge markers (scaled from 24px)
+    #define FONT_ICON               &fa_icons_32               // Bottom icon (scaled from 54px)
+    #define FONT_NEEDLE_VALUE       &lv_font_montserrat_48     // Needle gauge value label (scaled from 80px)
     #define USE_CUSTOM_TEMP_FONT 0
     #define USE_CUSTOM_ICON_FONT 1
 #endif
@@ -200,7 +203,7 @@ extern "C" {
 #define NEEDLE_CENTER_BORDER_WIDTH      2
 
 // Label positioning (scaled)
-#define NEEDLE_VALUE_LABEL_X_OFFSET     ((int)(15/2 * GAUGE_SCALE))
+#define NEEDLE_VALUE_LABEL_X_OFFSET     0 // ((int)(15/2 * GAUGE_SCALE))
 #define NEEDLE_VALUE_LABEL_Y_OFFSET     ((int)(160 * GAUGE_SCALE))
 #define NEEDLE_UNIT_LABEL_X_OFFSET      ((int)(140 * GAUGE_SCALE))
 #define NEEDLE_UNIT_LABEL_Y_OFFSET      ((int)(100 * GAUGE_SCALE))

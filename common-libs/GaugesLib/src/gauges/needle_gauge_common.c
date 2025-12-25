@@ -164,7 +164,7 @@ lv_obj_t* needle_gauge_create_value_label(const needle_gauge_config_t *config) {
     // Create value label (just the number, no unit)
     static lv_style_t style_value;
     lv_style_init(&style_value);
-    lv_style_set_text_font(&style_value, FONT_TEMP_UNIT);
+    lv_style_set_text_font(&style_value, FONT_NEEDLE_VALUE);
     lv_style_set_text_color(&style_value, COLOR_AMBER);
 
     lv_obj_t *value_label = lv_label_create(lv_scr_act());
