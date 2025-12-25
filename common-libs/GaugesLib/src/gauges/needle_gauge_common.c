@@ -78,22 +78,12 @@ lv_obj_t* needle_gauge_create_meter(const needle_gauge_config_t *config, needle_
     lv_obj_set_style_outline_width(meter, 0, 0);
     lv_obj_set_style_radius(meter, LV_RADIUS_CIRCLE, 0);
 
-    // Font style for labels
-    lv_obj_set_style_text_color(meter, COLOR_WHITE, 0);
+    // Font style for labels (white for normal zone)
     lv_obj_set_style_text_font(meter, FONT_MARKERS, 0);
-
-    // Add scale
-    lv_meter_scale_t *scale = lv_meter_add_scale(meter);
+    lv_obj_set_style_text_color(meter, COLOR_WHITE, 0);
 
     // Calculate range and angles
     int32_t range = (int32_t)(config->value_max - config->value_min);
-
-    // Set scale range and rotation
-    lv_meter_set_scale_range(meter, scale,
-                             (int32_t)config->value_min,
-                             (int32_t)config->value_max,
-                             NEEDLE_ANGLE_RANGE,
-                             NEEDLE_ANGLE_START);
 
     // Calculate tick counts
     // Minor ticks: one every unit (or every 0.5 for pressure)
@@ -107,25 +97,42 @@ lv_obj_t* needle_gauge_create_meter(const needle_gauge_config_t *config, needle_
         minor_tick_count = range / 2 + 1;
     }
 
-    // Minor ticks: thinner and shorter
-    lv_meter_set_scale_ticks(meter, scale,
-                            minor_tick_count,           // count
-                            1,                          // width (1px)
-                            (int)(8 * GAUGE_SCALE),    // length
-                            lv_color_hex(0x666666));    // gray color
-
-    // Major ticks with labels
-    // Calculate how many minor ticks between each major tick
+    // Calculate tick spacing for major ticks
     int32_t ticks_between_major = (minor_tick_count - 1) / (config->major_tick_count - 1);
 
-    lv_meter_set_scale_major_ticks(meter, scale,
-                                   ticks_between_major,        // every nth tick
-                                   3,                          // width
-                                   (int)(18 * GAUGE_SCALE),   // length
-                                   COLOR_WHITE,                // color
-                                   (int)(29 * GAUGE_SCALE));  // label gap (distance from tick)
+    // Main scale for needle - full range
+    lv_meter_scale_t *scale = lv_meter_add_scale(meter);
+    lv_meter_set_scale_range(meter, scale,
+                             (int32_t)config->value_min,
+                             (int32_t)config->value_max,
+                             NEEDLE_ANGLE_RANGE,
+                             NEEDLE_ANGLE_START);
 
-    // Add needle indicator (vibrant orange/amber)
+    // Minor ticks (gray for normal zone, dark red for red zone)
+    lv_meter_set_scale_ticks(meter, scale,
+                            minor_tick_count,
+                            1,
+                            (int)(8 * GAUGE_SCALE),
+                            lv_color_hex(0x666666));
+
+    // Major ticks with labels (white)
+    lv_meter_set_scale_major_ticks(meter, scale,
+                                   ticks_between_major,
+                                   3,
+                                   (int)(18 * GAUGE_SCALE),
+                                   COLOR_WHITE,
+                                   (int)(29 * GAUGE_SCALE));
+
+    // Add a red arc in the background to indicate the red zone
+    lv_meter_indicator_t *red_zone_arc = lv_meter_add_arc(
+        meter, scale,
+        (int)(8 * GAUGE_SCALE),   // width
+        COLOR_RED,                 // color
+        (int)(-15 * GAUGE_SCALE)); // negative offset to place behind ticks
+    lv_meter_set_indicator_start_value(meter, red_zone_arc, (int32_t)config->zone_red);
+    lv_meter_set_indicator_end_value(meter, red_zone_arc, (int32_t)config->value_max);
+
+    // Add needle indicator on the full-range scale
     lv_meter_indicator_t *needle = lv_meter_add_needle_line(
         meter, scale,
         NEEDLE_WIDTH,           // width
@@ -144,7 +151,7 @@ lv_obj_t* needle_gauge_create_meter(const needle_gauge_config_t *config, needle_
 
     // Store in state
     state->meter = meter;
-    state->scale = scale;
+    state->scale = scale;  // Use full-range scale for needle
     state->needle_indicator = needle;
 
     // Set initial value
