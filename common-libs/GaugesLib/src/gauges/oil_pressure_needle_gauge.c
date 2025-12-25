@@ -37,6 +37,7 @@ void oil_pressure_needle_gauge_init(void) {
     oil_pressure_needle_state.screen_bg = needle_gauge_create_background();
     needle_gauge_create_meter(&oil_pressure_needle_config, &oil_pressure_needle_state);
     oil_pressure_needle_state.value_label = needle_gauge_create_value_label(&oil_pressure_needle_config);
+    oil_pressure_needle_state.icon_label = needle_gauge_create_icon_label(&oil_pressure_needle_config);
 }
 
 void oil_pressure_needle_gauge_set_value(float pressure, int32_t rpm) {

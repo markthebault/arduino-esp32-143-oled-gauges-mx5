@@ -49,6 +49,8 @@ typedef struct {
     lv_meter_scale_t *scale;
     lv_meter_indicator_t *needle_indicator;
     lv_obj_t *value_label;
+    lv_obj_t *unit_label;
+    lv_obj_t *icon_label;
     lv_anim_t blink_anim;
     bool is_blinking;
     float current_value;
@@ -115,11 +117,25 @@ lv_obj_t* needle_gauge_create_background(void);
 lv_obj_t* needle_gauge_create_meter(const needle_gauge_config_t *config, needle_gauge_state_t *state);
 
 /**
- * @brief Create the value display label in bottom right corner
- * @param config Gauge configuration (for unit text)
+ * @brief Create the value display label (number only)
+ * @param config Gauge configuration
  * @return Value label object
  */
 lv_obj_t* needle_gauge_create_value_label(const needle_gauge_config_t *config);
+
+/**
+ * @brief Create the unit label (smaller font)
+ * @param config Gauge configuration (for unit text)
+ * @return Unit label object
+ */
+lv_obj_t* needle_gauge_create_unit_label(const needle_gauge_config_t *config);
+
+/**
+ * @brief Create the icon/text label centered above gauge
+ * @param config Gauge configuration (for icon symbol)
+ * @return Icon label object
+ */
+lv_obj_t* needle_gauge_create_icon_label(const needle_gauge_config_t *config);
 
 // ============================================================================
 // NEEDLE GAUGE UPDATE

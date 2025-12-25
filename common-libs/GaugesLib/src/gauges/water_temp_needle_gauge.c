@@ -37,6 +37,7 @@ void water_temp_needle_gauge_init(void) {
     water_needle_state.screen_bg = needle_gauge_create_background();
     needle_gauge_create_meter(&water_needle_config, &water_needle_state);
     water_needle_state.value_label = needle_gauge_create_value_label(&water_needle_config);
+    water_needle_state.icon_label = needle_gauge_create_icon_label(&water_needle_config);
 }
 
 void water_temp_needle_gauge_set_value(int32_t temperature) {

@@ -37,6 +37,7 @@ void oil_temp_needle_gauge_init(void) {
     oil_needle_state.screen_bg = needle_gauge_create_background();
     needle_gauge_create_meter(&oil_needle_config, &oil_needle_state);
     oil_needle_state.value_label = needle_gauge_create_value_label(&oil_needle_config);
+    oil_needle_state.icon_label = needle_gauge_create_icon_label(&oil_needle_config);
 }
 
 void oil_temp_needle_gauge_set_value(int32_t temperature) {

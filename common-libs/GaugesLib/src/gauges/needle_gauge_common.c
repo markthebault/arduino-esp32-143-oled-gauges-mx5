@@ -154,7 +154,7 @@ lv_obj_t* needle_gauge_create_meter(const needle_gauge_config_t *config, needle_
 }
 
 lv_obj_t* needle_gauge_create_value_label(const needle_gauge_config_t *config) {
-    // Create value label in bottom right corner
+    // Create value label (just the number, no unit)
     static lv_style_t style_value;
     lv_style_init(&style_value);
     lv_style_set_text_font(&style_value, FONT_TEMP_UNIT);
@@ -162,15 +162,9 @@ lv_obj_t* needle_gauge_create_value_label(const needle_gauge_config_t *config) {
 
     lv_obj_t *value_label = lv_label_create(lv_scr_act());
 
-    // Initialize with placeholder text
-    if (config->unit_text) {
-        char text[32];
-        if (config->decimal_places > 0) {
-            snprintf(text, sizeof(text), "0.0%s", config->unit_text);
-        } else {
-            snprintf(text, sizeof(text), "0%s", config->unit_text);
-        }
-        lv_label_set_text(value_label, text);
+    // Initialize with placeholder number only
+    if (config->decimal_places > 0) {
+        lv_label_set_text(value_label, "0.0");
     } else {
         lv_label_set_text(value_label, "0");
     }
@@ -179,10 +173,73 @@ lv_obj_t* needle_gauge_create_value_label(const needle_gauge_config_t *config) {
 
     // Position in bottom right area, closer to center
     lv_obj_align(value_label, LV_ALIGN_CENTER,
-                (int)(100 * GAUGE_SCALE),  // Move more toward center horizontally
-                (int)(100 * GAUGE_SCALE)); // Move up from bottom
+                (int)(100 * GAUGE_SCALE),
+                (int)(100 * GAUGE_SCALE));
 
     return value_label;
+}
+
+lv_obj_t* needle_gauge_create_unit_label(const needle_gauge_config_t *config) {
+    // Create unit label with smaller font
+    static lv_style_t style_unit;
+    lv_style_init(&style_unit);
+    lv_style_set_text_font(&style_unit, FONT_MARKERS);  // Smaller font for unit
+    lv_style_set_text_color(&style_unit, COLOR_AMBER);
+
+    lv_obj_t *unit_label = lv_label_create(lv_scr_act());
+
+    // Set unit text
+    if (config->unit_text) {
+        lv_label_set_text(unit_label, config->unit_text);
+    } else {
+        lv_label_set_text(unit_label, "");
+    }
+
+    lv_obj_add_style(unit_label, &style_unit, 0);
+
+    // Position next to value label (will be adjusted after value is set)
+    lv_obj_align(unit_label, LV_ALIGN_CENTER,
+                (int)(140 * GAUGE_SCALE),
+                (int)(100 * GAUGE_SCALE));
+
+    return unit_label;
+}
+
+lv_obj_t* needle_gauge_create_icon_label(const needle_gauge_config_t *config) {
+    // Create icon/text label centered above gauge
+    static lv_style_t style_icon;
+    lv_style_init(&style_icon);
+    lv_style_set_text_color(&style_icon, COLOR_AMBER);
+
+    lv_obj_t *icon_label = lv_label_create(lv_scr_act());
+
+    #if USE_CUSTOM_ICON_FONT
+        // Use Font Awesome icon symbol
+        lv_style_set_text_font(&style_icon, FONT_ICON);
+        lv_label_set_text(icon_label, config->icon_symbol);
+    #else
+        // Use text fallback with smaller font
+        lv_style_set_text_font(&style_icon, FONT_MARKERS);
+        if (config->icon_symbol == OIL_TEMP_SYMBOL) {
+            lv_label_set_text(icon_label, OIL_TEMP_TEXT_LABEL);
+        } else if (config->icon_symbol == OIL_PRESSURE_SYMBOL) {
+            lv_label_set_text(icon_label, OIL_PRES_TEXT_LABEL);
+        } else if (config->icon_symbol == WATER_SYMBOL) {
+            lv_label_set_text(icon_label, WATER_TEXT_LABEL);
+        } else {
+            lv_label_set_text(icon_label, "---");
+        }
+    #endif
+
+    lv_obj_add_style(icon_label, &style_icon, 0);
+
+    // Position at top of meter gauge
+    int padding_offset_value = (int)15 / 2;
+    lv_obj_align(icon_label, LV_ALIGN_CENTER,
+                padding_offset_value,
+                (int)(-80 * GAUGE_SCALE));
+
+    return icon_label;
 }
 
 // ============================================================================
@@ -249,24 +306,14 @@ void needle_gauge_update_value(needle_gauge_state_t *state, const needle_gauge_c
         state->is_blinking = false;
     }
 
-    // Update value label with ACTUAL value (not clamped)
+    // Update value label with ACTUAL value (not clamped) - number only, no unit
     if (state->value_label) {
         char text[32];
-        if (config->unit_text) {
-            if (config->decimal_places > 0) {
-                snprintf(text, sizeof(text), "%.*f%s",
-                        config->decimal_places, actual_value, config->unit_text);
-            } else {
-                snprintf(text, sizeof(text), "%d%s",
-                        (int)actual_value, config->unit_text);
-            }
+        if (config->decimal_places > 0) {
+            snprintf(text, sizeof(text), "%.*f",
+                    config->decimal_places, actual_value);
         } else {
-            if (config->decimal_places > 0) {
-                snprintf(text, sizeof(text), "%.*f",
-                        config->decimal_places, actual_value);
-            } else {
-                snprintf(text, sizeof(text), "%d", (int)actual_value);
-            }
+            snprintf(text, sizeof(text), "%d", (int)actual_value);
         }
         lv_label_set_text(state->value_label, text);
     }
