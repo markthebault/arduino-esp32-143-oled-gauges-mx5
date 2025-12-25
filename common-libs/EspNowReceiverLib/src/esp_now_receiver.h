@@ -3,7 +3,7 @@
 
 #include "ESP32_NOW.h"
 #include "WiFi.h"
-#include "telemetry.h"
+#include "TelemetryData.h"
 #include <vector>
 
 #define ESPNOW_WIFI_CHANNEL 6
