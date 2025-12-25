@@ -55,12 +55,33 @@ extern "C" {
 // COLOR PALETTE
 // ============================================================================
 
+// Base colors
 #define COLOR_BLACK   lv_color_hex(0x000000)
 #define COLOR_WHITE   lv_color_hex(0xE6E6E6)   // Not full white. Reduces glare and burn-in
 #define COLOR_GREY    lv_color_hex(0x7A7A7A)   // Neutral UI text
 #define COLOR_GREEN   lv_color_hex(0x00C853)   // Primary normal state
 #define COLOR_AMBER   lv_color_hex(0xF2A900)   // Warning. Slightly less harsh than FA8C00
 #define COLOR_RED     lv_color_hex(0xE53935)   // Alert. OLED-safe red
+
+// Screen and background colors
+#define COLOR_SCREEN_BG         COLOR_BLACK     // Main screen background
+
+// Gauge component colors
+#define COLOR_ARC_BORDER        COLOR_WHITE     // Arc gauge border
+#define COLOR_ARC_BACKGROUND    COLOR_BLACK     // Arc gauge background
+#define COLOR_MARKER            COLOR_WHITE     // Arc gauge tick markers
+#define COLOR_MARKER_LABEL      COLOR_WHITE     // Arc gauge marker labels
+#define COLOR_REDLINE           COLOR_RED       // Redline indicator
+
+// Text and label colors
+#define COLOR_VALUE_TEXT        COLOR_WHITE     // Main value display
+#define COLOR_UNIT_TEXT         COLOR_AMBER     // Unit labels (°C, bar, etc.)
+#define COLOR_ICON              COLOR_AMBER     // Icon symbols
+
+// Needle gauge colors
+#define COLOR_NEEDLE_MINOR_TICK lv_color_hex(0x666666)  // Minor tick marks (gray)
+#define COLOR_NEEDLE_MAJOR_TICK COLOR_WHITE             // Major tick marks
+#define COLOR_NEEDLE_LABEL      COLOR_WHITE             // Needle gauge scale labels
 
 // ============================================================================
 // ICON SYMBOLS AND TEXT LABELS
@@ -160,7 +181,7 @@ extern "C" {
 // Tick styling (scaled)
 #define NEEDLE_MINOR_TICK_LENGTH        ((int)(8 * GAUGE_SCALE))
 #define NEEDLE_MINOR_TICK_WIDTH         1
-#define NEEDLE_MINOR_TICK_COLOR         lv_color_hex(0x666666)  // Gray
+#define NEEDLE_MINOR_TICK_COLOR         COLOR_NEEDLE_MINOR_TICK  // Minor tick color
 
 #define NEEDLE_MAJOR_TICK_WIDTH         3
 #define NEEDLE_MAJOR_TICK_LENGTH        ((int)(18 * GAUGE_SCALE))

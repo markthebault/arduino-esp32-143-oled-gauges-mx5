@@ -60,25 +60,25 @@ void gauge_manager_init(void) {
 
     // Create screen for oil temp gauge (racing)
     gauge_screens[GAUGE_OIL_TEMP] = lv_obj_create(NULL);
-    lv_obj_set_style_bg_color(gauge_screens[GAUGE_OIL_TEMP], lv_color_hex(0x000000), 0);
+    lv_obj_set_style_bg_color(gauge_screens[GAUGE_OIL_TEMP], COLOR_SCREEN_BG, 0);
     lv_scr_load(gauge_screens[GAUGE_OIL_TEMP]);
     oil_temp_gauge_init();
 
     // Create screen for water temp gauge (racing)
     gauge_screens[GAUGE_WATER_TEMP] = lv_obj_create(NULL);
-    lv_obj_set_style_bg_color(gauge_screens[GAUGE_WATER_TEMP], lv_color_hex(0x000000), 0);
+    lv_obj_set_style_bg_color(gauge_screens[GAUGE_WATER_TEMP], COLOR_SCREEN_BG, 0);
     lv_scr_load(gauge_screens[GAUGE_WATER_TEMP]);
     water_temp_gauge_init();
 
     // Create screen for multi gauge (racing)
     gauge_screens[GAUGE_MULTI] = lv_obj_create(NULL);
-    lv_obj_set_style_bg_color(gauge_screens[GAUGE_MULTI], lv_color_hex(0x000000), 0);
+    lv_obj_set_style_bg_color(gauge_screens[GAUGE_MULTI], COLOR_SCREEN_BG, 0);
     lv_scr_load(gauge_screens[GAUGE_MULTI]);
     multi_gauge_init();
 
     // Create screen for oil pressure gauge (racing)
     gauge_screens[GAUGE_OIL_PRESSURE] = lv_obj_create(NULL);
-    lv_obj_set_style_bg_color(gauge_screens[GAUGE_OIL_PRESSURE], lv_color_hex(0x000000), 0);
+    lv_obj_set_style_bg_color(gauge_screens[GAUGE_OIL_PRESSURE], COLOR_SCREEN_BG, 0);
     lv_scr_load(gauge_screens[GAUGE_OIL_PRESSURE]);
     oil_pressure_gauge_init();
 
@@ -86,19 +86,19 @@ void gauge_manager_init(void) {
 
     // Create screen for oil temp needle gauge (normal)
     needle_gauge_screens[GAUGE_OIL_TEMP] = lv_obj_create(NULL);
-    lv_obj_set_style_bg_color(needle_gauge_screens[GAUGE_OIL_TEMP], lv_color_hex(0x000000), 0);
+    lv_obj_set_style_bg_color(needle_gauge_screens[GAUGE_OIL_TEMP], COLOR_SCREEN_BG, 0);
     lv_scr_load(needle_gauge_screens[GAUGE_OIL_TEMP]);
     oil_temp_needle_gauge_init();
 
     // Create screen for water temp needle gauge (normal)
     needle_gauge_screens[GAUGE_WATER_TEMP] = lv_obj_create(NULL);
-    lv_obj_set_style_bg_color(needle_gauge_screens[GAUGE_WATER_TEMP], lv_color_hex(0x000000), 0);
+    lv_obj_set_style_bg_color(needle_gauge_screens[GAUGE_WATER_TEMP], COLOR_SCREEN_BG, 0);
     lv_scr_load(needle_gauge_screens[GAUGE_WATER_TEMP]);
     water_temp_needle_gauge_init();
 
     // Create screen for oil pressure needle gauge (normal)
     needle_gauge_screens[GAUGE_OIL_PRESSURE] = lv_obj_create(NULL);
-    lv_obj_set_style_bg_color(needle_gauge_screens[GAUGE_OIL_PRESSURE], lv_color_hex(0x000000), 0);
+    lv_obj_set_style_bg_color(needle_gauge_screens[GAUGE_OIL_PRESSURE], COLOR_SCREEN_BG, 0);
     lv_scr_load(needle_gauge_screens[GAUGE_OIL_PRESSURE]);
     oil_pressure_needle_gauge_init();
 
