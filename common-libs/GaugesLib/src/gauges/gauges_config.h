@@ -157,7 +157,7 @@ extern "C" {
 
 // Red zone arc styling (scaled)
 #define NEEDLE_RED_ZONE_WIDTH           ((int)(8 * GAUGE_SCALE))
-#define NEEDLE_RED_ZONE_OFFSET          ((int)(-15 * GAUGE_SCALE))
+#define NEEDLE_RED_ZONE_OFFSET          ((int)(-10 * GAUGE_SCALE))
 
 // Needle styling (scaled)
 #define NEEDLE_OFFSET                   ((int)(-20 * GAUGE_SCALE))
