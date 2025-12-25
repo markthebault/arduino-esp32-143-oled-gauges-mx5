@@ -4,6 +4,10 @@
 TelemetryData latestData = {0};
 bool dataReceived = false;
 std::vector<ESP_NOW_Peer_Class *> masters;
+unsigned long lastDataReceivedTime = 0;
+
+// Timeout configuration (5 seconds)
+#define DATA_TIMEOUT_MS 5000
 
 /* --- ESP-NOW Peer Class Implementation --- */
 ESP_NOW_Peer_Class::ESP_NOW_Peer_Class(const uint8_t *mac_addr, uint8_t channel, wifi_interface_t iface, const uint8_t *lmk)
@@ -18,6 +22,7 @@ void ESP_NOW_Peer_Class::onReceive(const uint8_t *data, size_t len, bool broadca
   if (len == sizeof(TelemetryData)) {
     memcpy(&latestData, data, sizeof(TelemetryData));
     dataReceived = true;
+    lastDataReceivedTime = millis();
   }
 }
 
@@ -49,4 +54,28 @@ void espnow_receiver_init() {
 
   ESP_NOW.onNewPeer(register_new_master, nullptr);
   Serial.println("Receiver System Ready");
+}
+
+/* --- Check for data timeout and reset values if needed --- */
+void espnow_check_timeout() {
+  // If we've never received data, or if the timeout has expired
+  if (lastDataReceivedTime == 0 || (millis() - lastDataReceivedTime > DATA_TIMEOUT_MS)) {
+    // Set all telemetry values to 0
+    latestData.oilTemp = 0.0f;
+    latestData.waterTemp = 0.0f;
+    latestData.engineRPM = 0;
+    latestData.oilPressure = 0.0f;
+    latestData.brakePressure = 0.0f;
+    latestData.brakePercent = 0;
+    latestData.throttlePos = 0.0f;
+    latestData.speed = 0.0f;
+    latestData.accelPos = 0.0f;
+    dataReceived = false;
+  }
+}
+
+/* --- Get telemetry data with automatic timeout check --- */
+TelemetryData espnow_get_data() {
+  espnow_check_timeout();
+  return latestData;
 }

@@ -24,5 +24,7 @@ extern std::vector<ESP_NOW_Peer_Class *> masters;
 // Functions
 void register_new_master(const esp_now_recv_info_t *info, const uint8_t *data, int len, void *arg);
 void espnow_receiver_init();
+void espnow_check_timeout();
+TelemetryData espnow_get_data();
 
 #endif // ESP_NOW_RECEIVER_H

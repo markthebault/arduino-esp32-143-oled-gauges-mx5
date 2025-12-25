@@ -104,18 +104,20 @@ void loop()
 {
   lv_timer_handler(); /* Process LVGL timers and GUI updates */
 
-  if (dataReceived) {
-    Serial.print("DEBUG - oilTemp: ");
-    Serial.print(latestData.oilTemp);
-    Serial.print(", waterTemp: ");
-    Serial.print(latestData.waterTemp);
-    Serial.print(", oilPressure: ");
-    Serial.print(latestData.oilPressure);
-    Serial.print(", RPM: ");
-    Serial.println(latestData.engineRPM);
+  // Check timeout and update telemetry (sets values to -1 if no data in 5s)
+  espnow_check_timeout();
 
-    gauge_manager_update(latestData.oilTemp, latestData.waterTemp, latestData.oilPressure, latestData.engineRPM);
-  }
+  // Update gauges
+  Serial.print("DEBUG - oilTemp: ");
+  Serial.print(latestData.oilTemp);
+  Serial.print(", waterTemp: ");
+  Serial.print(latestData.waterTemp);
+  Serial.print(", oilPressure: ");
+  Serial.print(latestData.oilPressure);
+  Serial.print(", RPM: ");
+  Serial.println(latestData.engineRPM);
+
+  gauge_manager_update(latestData.oilTemp, latestData.waterTemp, latestData.oilPressure, latestData.engineRPM);
 
   // Uncomment for testing without ESP-NOW
   // gauge_manager_update_test_animation(); // Update gauge values with test animation

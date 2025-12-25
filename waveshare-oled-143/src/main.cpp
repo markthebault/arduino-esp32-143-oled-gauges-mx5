@@ -33,21 +33,22 @@ void setup() {
 }
 
 void loop() {
-  // Update the current gauge if we have received data
-  if (dataReceived) {
-    if (example_lvgl_lock(-1)) {
-      Serial.print("DEBUG - oilTemp: ");
-      Serial.print(latestData.oilTemp);
-      Serial.print(", waterTemp: ");
-      Serial.print(latestData.waterTemp);
-      Serial.print(", oilPressure: ");
-      Serial.print(latestData.oilPressure);
-      Serial.print(", RPM: ");
-      Serial.println(latestData.engineRPM);
-      
-      gauge_manager_update(latestData.oilTemp, latestData.waterTemp, latestData.oilPressure, latestData.engineRPM);
-      example_lvgl_unlock();
-    }
+  // Check timeout and update telemetry (sets values to -1 if no data in 5s)
+  espnow_check_timeout();
+
+  // Update the current gauge
+  if (example_lvgl_lock(-1)) {
+    Serial.print("DEBUG - oilTemp: ");
+    Serial.print(latestData.oilTemp);
+    Serial.print(", waterTemp: ");
+    Serial.print(latestData.waterTemp);
+    Serial.print(", oilPressure: ");
+    Serial.print(latestData.oilPressure);
+    Serial.print(", RPM: ");
+    Serial.println(latestData.engineRPM);
+
+    gauge_manager_update(latestData.oilTemp, latestData.waterTemp, latestData.oilPressure, latestData.engineRPM);
+    example_lvgl_unlock();
   }
 
   // This is for testing the oil temp gauge animation when ESP-NOW is not used
