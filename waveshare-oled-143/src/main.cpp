@@ -47,7 +47,7 @@ void loop() {
     Serial.print(", RPM: ");
     Serial.println(latestData.engineRPM);
 
-    gauge_manager_update(latestData.oilTemp, latestData.waterTemp, latestData.oilPressure, latestData.engineRPM);
+    gauge_manager_update(latestData.oilTemp, latestData.waterTemp, latestData.oilPressure, latestData.engineRPM, latestData.gaugeType);
     example_lvgl_unlock();
   }
 

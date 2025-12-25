@@ -8,6 +8,9 @@ extern "C" {
 #include "water_temp_gauge.h"
 #include "multi_gauge.h"
 #include "oil_pressure_gauge.h"
+#include "oil_temp_needle_gauge.h"
+#include "water_temp_needle_gauge.h"
+#include "oil_pressure_needle_gauge.h"
 
 // For millis() function
 #ifdef ARDUINO
@@ -23,7 +26,9 @@ extern unsigned long millis(void);
 
 static gauge_type_t current_gauge = DEFAULT_GAUGE;
 static lv_obj_t *gauge_screens[GAUGE_COUNT] = {NULL};
+static lv_obj_t *needle_gauge_screens[GAUGE_COUNT] = {NULL};
 static gauge_gesture_callback_t gesture_callback = NULL;
+static uint8_t current_gauge_mode = 1;  // 0 = normal/needle, 1 = racing/arc (default to racing)
 
 // ============================================================================
 // PRIVATE FUNCTIONS
@@ -51,42 +56,82 @@ static void internal_gesture_handler(lv_event_t * e) {
 // ============================================================================
 
 void gauge_manager_init(void) {
-    // Create screen for oil temp gauge
+    // ========== RACING MODE GAUGES (ARC STYLE) ==========
+
+    // Create screen for oil temp gauge (racing)
     gauge_screens[GAUGE_OIL_TEMP] = lv_obj_create(NULL);
     lv_obj_set_style_bg_color(gauge_screens[GAUGE_OIL_TEMP], lv_color_hex(0x000000), 0);
     lv_scr_load(gauge_screens[GAUGE_OIL_TEMP]);
     oil_temp_gauge_init();
 
-    // Create screen for water temp gauge
+    // Create screen for water temp gauge (racing)
     gauge_screens[GAUGE_WATER_TEMP] = lv_obj_create(NULL);
     lv_obj_set_style_bg_color(gauge_screens[GAUGE_WATER_TEMP], lv_color_hex(0x000000), 0);
     lv_scr_load(gauge_screens[GAUGE_WATER_TEMP]);
     water_temp_gauge_init();
 
-    // Create screen for multi gauge
+    // Create screen for multi gauge (racing)
     gauge_screens[GAUGE_MULTI] = lv_obj_create(NULL);
     lv_obj_set_style_bg_color(gauge_screens[GAUGE_MULTI], lv_color_hex(0x000000), 0);
     lv_scr_load(gauge_screens[GAUGE_MULTI]);
     multi_gauge_init();
 
-    // Create screen for oil pressure gauge
+    // Create screen for oil pressure gauge (racing)
     gauge_screens[GAUGE_OIL_PRESSURE] = lv_obj_create(NULL);
     lv_obj_set_style_bg_color(gauge_screens[GAUGE_OIL_PRESSURE], lv_color_hex(0x000000), 0);
     lv_scr_load(gauge_screens[GAUGE_OIL_PRESSURE]);
     oil_pressure_gauge_init();
 
+    // ========== NORMAL MODE GAUGES (NEEDLE STYLE) ==========
+
+    // Create screen for oil temp needle gauge (normal)
+    needle_gauge_screens[GAUGE_OIL_TEMP] = lv_obj_create(NULL);
+    lv_obj_set_style_bg_color(needle_gauge_screens[GAUGE_OIL_TEMP], lv_color_hex(0x000000), 0);
+    lv_scr_load(needle_gauge_screens[GAUGE_OIL_TEMP]);
+    oil_temp_needle_gauge_init();
+
+    // Create screen for water temp needle gauge (normal)
+    needle_gauge_screens[GAUGE_WATER_TEMP] = lv_obj_create(NULL);
+    lv_obj_set_style_bg_color(needle_gauge_screens[GAUGE_WATER_TEMP], lv_color_hex(0x000000), 0);
+    lv_scr_load(needle_gauge_screens[GAUGE_WATER_TEMP]);
+    water_temp_needle_gauge_init();
+
+    // Create screen for oil pressure needle gauge (normal)
+    needle_gauge_screens[GAUGE_OIL_PRESSURE] = lv_obj_create(NULL);
+    lv_obj_set_style_bg_color(needle_gauge_screens[GAUGE_OIL_PRESSURE], lv_color_hex(0x000000), 0);
+    lv_scr_load(needle_gauge_screens[GAUGE_OIL_PRESSURE]);
+    oil_pressure_needle_gauge_init();
+
+    // Note: Multi gauge is only available in racing mode
+    needle_gauge_screens[GAUGE_MULTI] = NULL;
+
     // Load the default gauge (configured via DEFAULT_GAUGE build flag)
+    // Start with racing mode by default
     lv_scr_load(gauge_screens[DEFAULT_GAUGE]);
     current_gauge = DEFAULT_GAUGE;
+    current_gauge_mode = 1;  // Racing mode
 }
 
 void gauge_manager_next(void) {
     // Move to next gauge, wrapping around
     current_gauge = (gauge_type_t)((current_gauge + 1) % GAUGE_COUNT);
 
-    // Load the screen for the new gauge
-    if (gauge_screens[current_gauge] != NULL) {
-        lv_scr_load(gauge_screens[current_gauge]);
+    // Skip multi gauge if in normal mode (needle gauges don't have multi gauge)
+    if (current_gauge_mode == 0 && current_gauge == GAUGE_MULTI) {
+        current_gauge = (gauge_type_t)((current_gauge + 1) % GAUGE_COUNT);
+    }
+
+    // Load the screen for the new gauge based on mode
+    if (current_gauge_mode == 1) {
+        // Racing mode - use arc gauges
+        if (gauge_screens[current_gauge] != NULL) {
+            lv_scr_load(gauge_screens[current_gauge]);
+        }
+    } else {
+        // Normal mode - use needle gauges
+        if (needle_gauge_screens[current_gauge] != NULL) {
+            lv_scr_load(needle_gauge_screens[current_gauge]);
+        }
     }
 }
 
@@ -98,9 +143,26 @@ void gauge_manager_previous(void) {
         current_gauge = (gauge_type_t)(current_gauge - 1);
     }
 
-    // Load the screen for the new gauge
-    if (gauge_screens[current_gauge] != NULL) {
-        lv_scr_load(gauge_screens[current_gauge]);
+    // Skip multi gauge if in normal mode (needle gauges don't have multi gauge)
+    if (current_gauge_mode == 0 && current_gauge == GAUGE_MULTI) {
+        if (current_gauge == 0) {
+            current_gauge = (gauge_type_t)(GAUGE_COUNT - 1);
+        } else {
+            current_gauge = (gauge_type_t)(current_gauge - 1);
+        }
+    }
+
+    // Load the screen for the new gauge based on mode
+    if (current_gauge_mode == 1) {
+        // Racing mode - use arc gauges
+        if (gauge_screens[current_gauge] != NULL) {
+            lv_scr_load(gauge_screens[current_gauge]);
+        }
+    } else {
+        // Normal mode - use needle gauges
+        if (needle_gauge_screens[current_gauge] != NULL) {
+            lv_scr_load(needle_gauge_screens[current_gauge]);
+        }
     }
 }
 
@@ -109,10 +171,17 @@ gauge_type_t gauge_manager_get_current(void) {
 }
 
 void gauge_manager_enable_gestures(void) {
-    // Attach the internal gesture handler to all gauge screens
+    // Attach the internal gesture handler to all gauge screens (racing mode)
     for (int i = 0; i < GAUGE_COUNT; i++) {
         if (gauge_screens[i] != NULL) {
             lv_obj_add_event_cb(gauge_screens[i], internal_gesture_handler, LV_EVENT_GESTURE, NULL);
+        }
+    }
+
+    // Attach the internal gesture handler to all needle gauge screens (normal mode)
+    for (int i = 0; i < GAUGE_COUNT; i++) {
+        if (needle_gauge_screens[i] != NULL) {
+            lv_obj_add_event_cb(needle_gauge_screens[i], internal_gesture_handler, LV_EVENT_GESTURE, NULL);
         }
     }
 }
@@ -120,31 +189,81 @@ void gauge_manager_enable_gestures(void) {
 void gauge_manager_set_gesture_callback(gauge_gesture_callback_t callback) {
     gesture_callback = callback;
 
-    // Attach the custom gesture callback to all gauge screens
+    // Attach the custom gesture callback to all gauge screens (racing mode)
     for (int i = 0; i < GAUGE_COUNT; i++) {
         if (gauge_screens[i] != NULL) {
             lv_obj_add_event_cb(gauge_screens[i], callback, LV_EVENT_GESTURE, NULL);
         }
     }
+
+    // Attach the custom gesture callback to all needle gauge screens (normal mode)
+    for (int i = 0; i < GAUGE_COUNT; i++) {
+        if (needle_gauge_screens[i] != NULL) {
+            lv_obj_add_event_cb(needle_gauge_screens[i], callback, LV_EVENT_GESTURE, NULL);
+        }
+    }
 }
 
-void gauge_manager_update(float oilTemp, float waterTemp, float oilPressure, int32_t rpm) {
-    // Update the appropriate gauge based on which one is currently visible
-    switch (current_gauge) {
-        case GAUGE_OIL_TEMP:
-            oil_temp_gauge_set_value((int32_t)oilTemp);
-            break;
-        case GAUGE_WATER_TEMP:
-            water_temp_gauge_set_value((int32_t)waterTemp);
-            break;
-        case GAUGE_MULTI:
-            multi_gauge_set_values((int32_t)waterTemp, (int32_t)oilTemp, oilPressure, rpm);
-            break;
-        case GAUGE_OIL_PRESSURE:
-            oil_pressure_gauge_set_value(oilPressure, rpm);
-            break;
-        default:
-            break;
+void gauge_manager_update(float oilTemp, float waterTemp, float oilPressure, int32_t rpm, uint8_t gaugeMode) {
+    // Update gauge mode if it has changed
+    if (gaugeMode != current_gauge_mode) {
+        current_gauge_mode = gaugeMode;
+
+        // Switch to the appropriate screen for the new mode
+        if (current_gauge_mode == 1) {
+            // Racing mode - load arc gauge
+            if (gauge_screens[current_gauge] != NULL) {
+                lv_scr_load(gauge_screens[current_gauge]);
+            }
+        } else {
+            // Normal mode - load needle gauge
+            // Skip multi gauge if in normal mode
+            if (current_gauge == GAUGE_MULTI) {
+                current_gauge = GAUGE_OIL_TEMP;  // Default to oil temp
+            }
+            if (needle_gauge_screens[current_gauge] != NULL) {
+                lv_scr_load(needle_gauge_screens[current_gauge]);
+            }
+        }
+    }
+
+    // Update the appropriate gauge based on mode and current gauge type
+    if (current_gauge_mode == 1) {
+        // Racing mode - update arc gauges
+        switch (current_gauge) {
+            case GAUGE_OIL_TEMP:
+                oil_temp_gauge_set_value((int32_t)oilTemp);
+                break;
+            case GAUGE_WATER_TEMP:
+                water_temp_gauge_set_value((int32_t)waterTemp);
+                break;
+            case GAUGE_MULTI:
+                multi_gauge_set_values((int32_t)waterTemp, (int32_t)oilTemp, oilPressure, rpm);
+                break;
+            case GAUGE_OIL_PRESSURE:
+                oil_pressure_gauge_set_value(oilPressure, rpm);
+                break;
+            default:
+                break;
+        }
+    } else {
+        // Normal mode - update needle gauges
+        switch (current_gauge) {
+            case GAUGE_OIL_TEMP:
+                oil_temp_needle_gauge_set_value((int32_t)oilTemp);
+                break;
+            case GAUGE_WATER_TEMP:
+                water_temp_needle_gauge_set_value((int32_t)waterTemp);
+                break;
+            case GAUGE_OIL_PRESSURE:
+                oil_pressure_needle_gauge_set_value(oilPressure, rpm);
+                break;
+            case GAUGE_MULTI:
+                // Multi gauge not available in normal mode, skip
+                break;
+            default:
+                break;
+        }
     }
 }
 
@@ -192,7 +311,7 @@ void gauge_manager_update_test_animation(void) {
         rpm = 6000 - (int32_t)((5200UL * t2) / 3000UL);
     }
 
-    gauge_manager_update(oil_temp, water_temp, oil_pressure, rpm);
+    gauge_manager_update(oil_temp, water_temp, oil_pressure, rpm, 1);  // Use racing mode for test
 }
 
 #ifdef __cplusplus

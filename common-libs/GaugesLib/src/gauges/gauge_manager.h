@@ -87,10 +87,11 @@ gauge_type_t gauge_manager_get_current(void);
  * @param waterTemp Water temperature value
  * @param oilPressure Oil pressure value in bar
  * @param rpm Engine RPM (used for dynamic oil pressure thresholds)
+ * @param gaugeMode Gauge display mode (0 = normal/needle, 1 = racing/arc)
  *
- * Updates only the currently visible gauge based on the type.
+ * Updates only the currently visible gauge based on the type and mode.
  */
-void gauge_manager_update(float oilTemp, float waterTemp, float oilPressure, int32_t rpm);
+void gauge_manager_update(float oilTemp, float waterTemp, float oilPressure, int32_t rpm, uint8_t gaugeMode);
 
 /**
  * @brief Update gauges with animated test values
