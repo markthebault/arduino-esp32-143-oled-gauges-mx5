@@ -62,5 +62,5 @@ void loop() {
     //   example_lvgl_unlock();
     // }
 
-  delay(200);
+  delay(100);
 }
