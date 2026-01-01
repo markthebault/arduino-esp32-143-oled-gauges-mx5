@@ -8,7 +8,6 @@
 static SemaphoreHandle_t lvgl_mux = NULL; //mutex semaphores
 #define LCD_HOST    SPI2_HOST
 
-#define EXAMPLE_Rotate_90
 #define SH8601_ID 0x86
 #define CO5300_ID 0xff
 static uint8_t READ_LCD_ID = 0x00;
@@ -87,7 +86,7 @@ void lcd_lvgl_Init(void)
   lv_init();
   lv_color_t *buf1 = (lv_color_t *)heap_caps_malloc(EXAMPLE_LCD_H_RES * EXAMPLE_LVGL_BUF_HEIGHT * sizeof(lv_color_t), MALLOC_CAP_DMA);
   assert(buf1);
-  // Use single buffering to save DMA memory (buf2 = NULL)
+  // Use single buffering to avoid conflicts with ESP-NOW (buf2 = NULL)
   lv_disp_draw_buf_init(&disp_buf, buf1, NULL, EXAMPLE_LCD_H_RES * EXAMPLE_LVGL_BUF_HEIGHT);
   lv_disp_drv_init(&disp_drv);
   disp_drv.hor_res = EXAMPLE_LCD_H_RES;
@@ -97,12 +96,10 @@ void lcd_lvgl_Init(void)
   disp_drv.draw_buf = &disp_buf;
   disp_drv.user_data = panel_handle;
 
-  // NOT WORKING to work that requires the following modification to the lvgl library:
-//   diff ./lib/lvgl/src/core/lv_refr.c ./tmp/lvgl/src/core/lv_refr.c
-// 1211a1212
-// >             height &= ~0x1UL;
-#ifdef EXAMPLE_Rotate_90
-  disp_drv.sw_rotate = 0;
+  // Software rotation configuration (configured in lcd_config.h)
+  // NOTE: Rotation requires LVGL library patch (automatically applied by scripts/patch_lvgl.py)
+#if ENABLE_DISPLAY_ROTATION
+  disp_drv.sw_rotate = 1;
   disp_drv.rotated = LV_DISP_ROT_270;
 #endif
   lv_disp_t *disp = lv_disp_drv_register(&disp_drv);
@@ -189,15 +186,18 @@ static void example_lvgl_flush_cb(lv_disp_drv_t *drv, const lv_area_t *area, lv_
 }
 void example_lvgl_rounder_cb(struct _lv_disp_drv_t *disp_drv, lv_area_t *area)
 {
-  // Round X1 down to even, X2 up to odd (Width is even)
-  area->x1 &= ~0x1;
-  area->x2 |= 0x1;
+  uint16_t x1 = area->x1;
+  uint16_t x2 = area->x2;
 
-  // Round Y1 down to even, Y2 up to odd (Height is even)
-  // This mimics the 'height &= ~0x1UL' fix by ensuring the 
-  // total number of lines (y2 - y1 + 1) is always even.
-  area->y1 &= ~0x1;
-  area->y2 |= 0x1;
+  uint16_t y1 = area->y1;
+  uint16_t y2 = area->y2;
+
+  // round the start of coordinate down to the nearest 2M number
+  area->x1 = (x1 >> 1) << 1;
+  area->y1 = (y1 >> 1) << 1;
+  // round the end of coordinate up to the nearest 2N+1 number
+  area->x2 = ((x2 >> 1) << 1) + 1;
+  area->y2 = ((y2 >> 1) << 1) + 1;
 }
 static void example_lvgl_touch_cb(lv_indev_drv_t *drv, lv_indev_data_t *data)
 {

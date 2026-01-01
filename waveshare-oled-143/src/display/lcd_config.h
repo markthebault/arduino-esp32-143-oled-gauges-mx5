@@ -1,6 +1,17 @@
 #ifndef LCD_CONFIG_H
 #define LCD_CONFIG_H
 
+// ============================================================================
+// Display Rotation Configuration
+// ============================================================================
+// Set to 1 to enable 90-degree rotation (270° clockwise)
+// Set to 0 to disable rotation (default orientation)
+// NOTE: Rotation requires LVGL library patch (automatically applied by scripts/patch_lvgl.py)
+#define ENABLE_DISPLAY_ROTATION        1
+
+// ============================================================================
+// Display Resolution
+// ============================================================================
 #define EXAMPLE_LCD_H_RES              466
 #define EXAMPLE_LCD_V_RES              466
 
