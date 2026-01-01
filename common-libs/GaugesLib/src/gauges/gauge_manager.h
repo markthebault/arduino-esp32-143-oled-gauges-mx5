@@ -32,15 +32,25 @@ typedef void (*gauge_gesture_callback_t)(lv_event_t * e);
  *
  * Initializes all gauges but only makes the first one visible.
  * Should be called once during setup after LVGL is initialized.
+ *
+ * @param display_rotation_270 Set to true if display is rotated 270° (affects gesture directions)
  */
-void gauge_manager_init(void);
+void gauge_manager_init(bool display_rotation_270);
 
 /**
  * @brief Enable gesture-based gauge switching
  *
- * Enables swipe gesture detection on all gauge screens:
+ * Enables swipe gesture detection on all gauge screens.
+ *
+ * Gesture behavior depends on the display_rotation_270 parameter passed to gauge_manager_init():
+ *
+ * When rotation is DISABLED (false):
  * - Swipe RIGHT: Switch to next gauge
  * - Swipe LEFT: Switch to previous gauge
+ *
+ * When rotation is ENABLED (true, 270° rotation):
+ * - Swipe UP (physical): Switch to next gauge
+ * - Swipe DOWN (physical): Switch to previous gauge
  *
  * Call this after gauge_manager_init() to enable gesture support.
  */

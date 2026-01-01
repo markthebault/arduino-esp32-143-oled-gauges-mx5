@@ -1,4 +1,5 @@
 #include "./display/lcd_bsp.h"
+#include "./display/lcd_config.h"
 #include "./touch/FT3168.h"
 #include "gauges/gauge_manager.h"
 #include <esp_now_receiver.h>
@@ -20,7 +21,8 @@ void setup() {
 
   // 2. Initialize all gauges via the gauge manager
   if (example_lvgl_lock(-1)) {
-    gauge_manager_init();
+    // Pass display rotation setting from lcd_config.h to gauge manager
+    gauge_manager_init(ENABLE_DISPLAY_ROTATION);
     gauge_manager_enable_gestures();  // Enable swipe gesture to switch gauges
     example_lvgl_unlock();
   }

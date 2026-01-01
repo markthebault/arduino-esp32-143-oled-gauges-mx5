@@ -29,6 +29,7 @@ static lv_obj_t *gauge_screens[GAUGE_COUNT] = {NULL};
 static lv_obj_t *needle_gauge_screens[GAUGE_COUNT] = {NULL};
 static gauge_gesture_callback_t gesture_callback = NULL;
 static uint8_t current_gauge_mode = 1;  // 0 = normal/needle, 1 = racing/arc (default to racing)
+static bool display_is_rotated_270 = false;  // Display rotation state (affects gesture directions)
 
 // ============================================================================
 // PRIVATE FUNCTIONS
@@ -37,17 +38,33 @@ static uint8_t current_gauge_mode = 1;  // 0 = normal/needle, 1 = racing/arc (de
 /**
  * @brief Internal gesture event handler
  *
- * Detects swipe gestures and switches gauges:
+ * Detects swipe gestures and switches gauges.
+ *
+ * When display rotation is disabled:
  * - Right swipe: next gauge
  * - Left swipe: previous gauge
+ *
+ * When display rotation is enabled (270° rotation):
+ * - Up swipe (physical): next gauge
+ * - Down swipe (physical): previous gauge
  */
 static void internal_gesture_handler(lv_event_t * e) {
     lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
 
-    if (dir == LV_DIR_RIGHT) {
-        gauge_manager_next();
-    } else if (dir == LV_DIR_LEFT) {
-        gauge_manager_previous();
+    if (display_is_rotated_270) {
+        // With 270° rotation: physical UP/DOWN swipes switch gauges
+        if (dir == LV_DIR_TOP) {
+            gauge_manager_next();
+        } else if (dir == LV_DIR_BOTTOM) {
+            gauge_manager_previous();
+        }
+    } else {
+        // No rotation: standard LEFT/RIGHT gestures
+        if (dir == LV_DIR_RIGHT) {
+            gauge_manager_next();
+        } else if (dir == LV_DIR_LEFT) {
+            gauge_manager_previous();
+        }
     }
 }
 
@@ -55,7 +72,10 @@ static void internal_gesture_handler(lv_event_t * e) {
 // PUBLIC API IMPLEMENTATION
 // ============================================================================
 
-void gauge_manager_init(void) {
+void gauge_manager_init(bool display_rotation_270) {
+    // Store rotation setting for gesture handling
+    display_is_rotated_270 = display_rotation_270;
+
     // ========== RACING MODE GAUGES (ARC STYLE) ==========
 
     // Create screen for oil temp gauge (racing)

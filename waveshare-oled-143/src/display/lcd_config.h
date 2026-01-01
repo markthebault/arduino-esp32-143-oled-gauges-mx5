@@ -7,6 +7,7 @@
 // Set to 1 to enable 90-degree rotation (270° clockwise)
 // Set to 0 to disable rotation (default orientation)
 // NOTE: Rotation requires LVGL library patch (automatically applied by scripts/patch_lvgl.py)
+// This setting is automatically passed to gauge_manager_init() for gesture adjustment
 #define ENABLE_DISPLAY_ROTATION        1
 
 // ============================================================================
